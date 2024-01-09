@@ -11,19 +11,11 @@ def tile_wsis(dataset):
 
 
 
-
-
-
-
-
-
-
-
 def main():
     project = sf.create_project(
-    root="./mf/"
+    root = "./mf/",
     annotations = "../../train_list_definitive.csv",
-    slides = "../../MF_AI_dataset_cropped"
+    slides = "../../MF_AI_dataset_cropped",
     )
 
     dataset = project.dataset(tile_px=512, tile_um="40x")
