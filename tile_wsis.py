@@ -8,6 +8,7 @@ def process_annotation_file(original_path):
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
 def tile_wsis(dataset):
+
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
     normalizer="macenko",
@@ -16,23 +17,54 @@ def tile_wsis(dataset):
     img_format='png',
     )
 
+    train, test = dataset.split(
+    model_type="categorical",
+    labels="label",
+    val_strategy='fixed'
+    )
 
-
+    return train, test
 
 
 
 
 def main():
-    project = sf.create_project(
-    root = "./mf/",
-    annotations = "train_list_definitive_slideflow.csv",
-    slides = "../../MF_AI_dataset_cropped",
-    )
+    if not os.path.exists("./mf"):
+        project = sf.create_project(
+        root = "./mf/",
+        annotations = "train_list_definitive_slideflow.csv",
+        slides = "../../MF_AI_dataset_cropped",
+        )
+
+    else:
+        project = sf.load_project("./mf/")
 
     dataset = project.dataset(tile_px=512, tile_um="40x")
     print(dataset.summary())
 
-    tile_wsis(dataset)
+    train, test = tile_wsis(dataset)
+
+    hp = sf.ModelParams(
+    tile_px=512,
+    tile_um='40x',
+    model='xception',
+    batch_size=32,
+    epochs=[3,5,10]
+    )
+
+    result = project.train(
+    'mf_vs_bid',
+    dataset=train,
+    params=hp,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
+    val_strategy='k-fold',
+    val_k_fold=5
+    )
+
+    test_result = project.evaluate(
+    model="mf/models/mf_vs_bd",
+    outcomes='label',
+    dataset=test
+    )
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
