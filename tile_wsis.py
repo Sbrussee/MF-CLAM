@@ -5,7 +5,7 @@ import os
 def process_annotation_file(original_path):
     df = pd.read_csv(original_path)
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
-    df.to_csv(f"{os.path.basename(original_path)}_slideflow.csv", index=False)
+    df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
 def tile_wsis(dataset):
     dataset.extract_tiles(
@@ -32,6 +32,6 @@ def main():
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
-    if not os.path.exists(f"{os.path.basename(annotations)}_slideflow.csv"):
+    if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
     main()
