@@ -11,14 +11,18 @@ def tile_wsis(dataset):
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
     normalizer="macenko",
-    whitespace_fraction=0.75
+    save_tiles=True,
+    whitespace_fraction=0.75,
+    img_format='png',
     )
 
 
 
 
-def main():
 
+
+
+def main():
     project = sf.create_project(
     root = "./mf/",
     annotations = "train_list_definitive_slideflow.csv",
