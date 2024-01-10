@@ -21,7 +21,7 @@ def main():
 
     project = sf.create_project(
     root = "./mf/",
-    annotations = "../../train_list_definitive.csv",
+    annotations = "../../train_list_definitive_slideflow.csv",
     slides = "../../MF_AI_dataset_cropped",
     )
 
