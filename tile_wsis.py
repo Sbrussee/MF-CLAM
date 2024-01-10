@@ -55,7 +55,7 @@ def main():
     result = project.train(
     'mf_vs_bid',
     dataset=train,
-    params=hp,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
+    params=hp,
     val_strategy='k-fold',
     val_k_fold=5
     )
