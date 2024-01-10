@@ -4,7 +4,7 @@ import os
 
 def process_annotation_file(original_path):
     df = pd.read_csv(original_path)
-    df.rename(columns={'case_id' : 'patient', 'slide_id' : slide}, inplace=True)
+    df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     df.to_csv(f"{os.path.basename(original_path)}_slideflow.csv", index=False)
 
 def tile_wsis(dataset):
