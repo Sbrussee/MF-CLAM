@@ -32,6 +32,6 @@ def main():
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
-    if not os.path.exists(f"{os.path.basename(original_path)}_slideflow.csv"):
+    if not os.path.exists(f"{os.path.basename(annotations)}_slideflow.csv"):
         process_annotation_file(annotations)
     main()
