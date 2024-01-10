@@ -2,7 +2,26 @@ import slideflow as sf
 import pandas as pd
 import os
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-p' '--project_directory',
+                    help="Directory to store the project")
+parser.add_argument('-s', '--slide_directory',
+                    help="Directory where slides are located")
+parser.add_argument('-a', '--annotation_file',
+                    help="CSV file having the slide id's, labels and patient id's. It should contain the 'slide' and 'patient' columns.")
+parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL', 'HistoSSL', 'PLIP',
+                                                          'SumCLR', 'DinoV2', 'resnet50_imagenet'],
+                    help="Pretrained feature extractors to use")
+parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
+                    help="MIL model to use")
+args = parser.parse_args()
+
+
+print("Available feature extractors: ", sf.model.list_extractors())
 def process_annotation_file(original_path):
+
     df = pd.read_csv(original_path)
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
@@ -43,6 +62,30 @@ def main():
     print(dataset.summary())
 
     train, test = tile_wsis(dataset)
+
+    feature_extractor = sf.model.build_feature_extractor(args.feature_extractor.lower(), tile_px=512)
+    bag_directory = project.generate_feature_bags(feature_extractor, dataset)
+
+    config = sf.mil.mil_config(args.model.lower())
+
+    splits = train.kfold_split(
+    k=3,
+    labels="label",
+    )
+
+    for train, val in splits:
+        project.train_mil(
+        config=config,
+        outcomes="label",
+        train_dataset=train,
+        val_dataset=val,
+        bags=bag_directory,
+        attention_heatmaps=True,
+        cmap="magma",
+        interpolation=None
+        )
+
+
 
     hp = sf.ModelParams(
     tile_px=512,
