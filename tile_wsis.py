@@ -11,7 +11,7 @@ def tile_wsis(dataset):
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
     normalizer="macenko",
-    whitespace_fraction="0.75"
+    whitespace_fraction=0.75
     )
 
 
