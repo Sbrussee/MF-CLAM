@@ -15,6 +15,7 @@ parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL'
                     help="Pretrained feature extractors to use", default="RetCCL")
 parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
                     help="MIL model to use", default="Attention MIL")
+parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan'])
 args = parser.parse_args()
 
 print("Available feature extractors: ", sf.model.list_extractors())
@@ -32,6 +33,7 @@ def tile_wsis(dataset):
     normalizer="macenko",
     save_tiles=True,
     whitespace_fraction=0.75,
+    whitespace_threshold=175,
     img_format='png',
     )
 
@@ -84,7 +86,7 @@ def main():
 
     hp = sf.ModelParams(
     tile_px=512,
-    tile_um='40x',
+    tile_um=128,
     model='xception',
     batch_size=32,
     epochs=[3,5,10]
