@@ -17,8 +17,8 @@ parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_
                     help="MIL model to use", default="Attention MIL")
 args = parser.parse_args()
 
-
 print("Available feature extractors: ", sf.model.list_extractors())
+
 def process_annotation_file(original_path):
 
     df = pd.read_csv(original_path)
@@ -38,7 +38,8 @@ def tile_wsis(dataset):
     train, test = dataset.split(
     model_type="categorical",
     labels="label",
-    val_strategy='fixed'
+    val_strategy='fixed',
+    val_fraction=0.2
     )
 
     return train, test
