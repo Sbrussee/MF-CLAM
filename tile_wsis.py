@@ -17,6 +17,7 @@ parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_
                     help="MIL model to use", default="Attention MIL")
 parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan'])
 args = parser.parse_args()
+print(args)
 
 print("Available feature extractors: ", sf.model.list_extractors())
 
@@ -45,7 +46,7 @@ def tile_wsis(dataset):
     return train, test
 
 def main():
-    if not os.path.exists("./mf"):
+    if not os.path.exists(args.project_directory):
         project = sf.create_project(
         root = args.project_directory,
         annotations = args.annotation_file,
@@ -53,7 +54,7 @@ def main():
         )
 
     else:
-        project = sf.load_project("./mf/")
+        project = sf.load_project(args.project_directory)
 
     dataset = project.dataset(tile_px=512, tile_um=128)
     print(dataset.summary())
