@@ -55,7 +55,7 @@ def main():
     else:
         project = sf.load_project("./mf/")
 
-    dataset = project.dataset(tile_px=512, tile_um="40x")
+    dataset = project.dataset(tile_px=512, tile_um=128)
     print(dataset.summary())
 
     train, test = tile_wsis(dataset)
@@ -81,8 +81,6 @@ def main():
         cmap="magma",
         interpolation=None
         )
-
-
 
     hp = sf.ModelParams(
     tile_px=512,
