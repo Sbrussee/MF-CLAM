@@ -12,10 +12,10 @@ parser.add_argument('-s', '--slide_directory',
 parser.add_argument('-a', '--annotation_file',
                     help="CSV file having the slide id's, labels and patient id's. It should contain the 'slide' and 'patient' columns.")
 parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL', 'HistoSSL', 'PLIP',
-                                                          'SumCLR', 'DinoV2', 'resnet50_imagenet'],
-                    help="Pretrained feature extractors to use")
+                                                          'SimCLR', 'DinoV2', 'resnet50_imagenet'],
+                    help="Pretrained feature extractors to use", default="RetCCL")
 parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
-                    help="MIL model to use")
+                    help="MIL model to use", default="Attention MIL")
 args = parser.parse_args()
 
 
