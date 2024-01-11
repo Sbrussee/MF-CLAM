@@ -30,10 +30,8 @@ def tile_wsis(dataset):
 
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
-    normalizer="macenko",
+    normalizer=args.normalization.lower(),
     save_tiles=True,
-    whitespace_fraction=0.75,
-    whitespace_threshold=175,
     img_format='png',
     )
 
@@ -49,9 +47,9 @@ def tile_wsis(dataset):
 def main():
     if not os.path.exists("./mf"):
         project = sf.create_project(
-        root = "./mf/",
-        annotations = "train_list_definitive_slideflow.csv",
-        slides = "../../MF_AI_dataset_cropped",
+        root = args.project_directory,
+        annotations = args.annotation_file,
+        slides = args.slide_directory,
         )
 
     else:
