@@ -1,9 +1,20 @@
 {
-"normalization_methods" : ["macenko"],
-"feature_extractors": ["RetCCL", "resnet50_imagenet"],
-"mil_models": ["AttMIL", "CLAM_SB", "CLAM_MB"],
-"train_using_ssl" : false,
-"ssl_params" : {
-  "ssl_models" : ["SimCLR"],
-  }
+   "normalization_methods":[
+      "macenko"
+   ],
+   "feature_extractors":[
+      "RetCCL",
+      "resnet50_imagenet"
+   ],
+   "mil_models":[
+      "AttMIL",
+      "CLAM_SB",
+      "CLAM_MB"
+   ],
+   "train_using_ssl":false,
+   "ssl_params":{
+      "ssl_models":[
+         "SimCLR"
+      ]
+   }
 }
