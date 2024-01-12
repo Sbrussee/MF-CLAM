@@ -59,24 +59,24 @@ def extract_features(extractor, project):
 
 
 def train_mil_model(model, extractor, project, config):
-        project.train_mil(
-        config=config,
-        outcomes="label",
-        train_dataset=train,
-        val_dataset=val,
-        bags=f"/bags/{extractor.lower()}",
-        attention_heatmaps=True,
-        outdir=f"/model/{model.lower()}"
-        )
+    project.train_mil(
+    config=config,
+    outcomes="label",
+    train_dataset=train,
+    val_dataset=val,
+    bags=f"/bags/{extractor.lower()}",
+    attention_heatmaps=True,
+    outdir=f"/model/{model.lower()}"
+    )
 
-        project.evaluate_mil(
-        model=f"/model/{model.lower()}",
-        outcomes="label",
-        dataset=test,
-        bags=f"/bags/{extractor.lower()}"
-        config=config,
-        attention_heatmaps=True
-        )
+    project.evaluate_mil(
+    model=f"/model/{model.lower()}",
+    outcomes="label",
+    dataset=test,
+    bags=f"/bags/{extractor.lower()}",
+    config=config,
+    attention_heatmaps=True
+    )
 
 
 def main():
