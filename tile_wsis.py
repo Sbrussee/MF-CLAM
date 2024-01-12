@@ -2,6 +2,7 @@ import slideflow as sf
 import pandas as pd
 import os
 import argparse
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--project_directory',
@@ -16,11 +17,15 @@ parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_
                     help="MIL model to use", default="Attention MIL")
 parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan'])
 parser.add_argument('-j', '--json_file', default=None,
-                    help="JSON file to load for defining experiments with multiple models/extractors/normalization steps")
+                    help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
 args = parser.parse_args()
 print(args)
 
 print("Available feature extractors: ", sf.model.list_extractors())
+
+if args.json_file != None:
+    with open(args.json_file, "r") as params_file:
+        params = json.load(params_file)
 
 def process_annotation_file(original_path):
 
@@ -46,6 +51,34 @@ def tile_wsis(dataset):
 
     return train, test
 
+def extract_features(extractor, project):
+    feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=512)
+    bag_directory = project.generate_feature_bags(feature_extractor,
+                                                  dataset,
+                                                  outdir=f"/bags/{extractor.lower()}")
+
+
+def train_mil_model(model, extractor, project, config):
+        project.train_mil(
+        config=config,
+        outcomes="label",
+        train_dataset=train,
+        val_dataset=val,
+        bags=f"/bags/{extractor.lower()}",
+        attention_heatmaps=True,
+        outdir=f"/model/{model.lower()}"
+        )
+
+        project.evaluate_mil(
+        model=f"/model/{model.lower()}",
+        outcomes="label",
+        dataset=test,
+        bags=f"/bags/{extractor.lower()}"
+        config=config,
+        attention_heatmaps=True
+        )
+
+
 def main():
     if not os.path.exists(args.project_directory):
         project = sf.create_project(
@@ -62,10 +95,11 @@ def main():
 
     train, test = tile_wsis(dataset)
 
-    feature_extractor = sf.model.build_feature_extractor(args.feature_extractor.lower(), tile_px=512)
-    bag_directory = project.generate_feature_bags(feature_extractor,
-                                                  dataset,
-                                                  outdir=f"/bags/{args.feature_extractor.lower()}")
+    if args.json_file != None:
+        for extractor in params['feature_extractors']:
+            extract_features(extractor)
+    else:
+        extract_features(args.feature_extractor)
 
     config = sf.mil.mil_config(args.model.lower())
 
@@ -74,50 +108,16 @@ def main():
     labels="label",
     )
 
-    for train, val in splits:
-        project.train_mil(
-        config=config,
-        outcomes="label",
-        train_dataset=train,
-        val_dataset=val,
-        bags=f"/bags/{args.feature_extractor.lower()}",
-        attention_heatmaps=True,
-        outdir=f"/model/{args.model.lower()}"
-        )
+    if args.json_file != None:
+        for extractor in params['feature_extractors']:
+            for model in params['mil_models']:
+                for train, val in splits:
+                    train_mil_model(model, extractor, project, config)
 
-        project.evaluate_mil(
-        model=f"/model/{args.model.lower()}",
-        outcomes="label",
-        dataset=test,
-        bags=f"/bags/{args.feature_extractor.lower()}"
-        config=config,
-        attention_heatmaps=True
-        )
+    else:
+        for train, val in splits:
+            train_mil_model(args.model, args.feature_extractor, project, config)
 
-
-    """
-    hp = sf.ModelParams(
-    tile_px=512,
-    tile_um=128,
-    model='xception',
-    batch_size=32,
-    epochs=[3,5,10]
-    )
-
-    result = project.train(
-    'mf_vs_bid',
-    dataset=train,
-    params=hp,
-    val_strategy='k-fold',
-    val_k_fold=5
-    )
-
-    test_result = project.evaluate(
-    model="mf/models/mf_vs_bd",
-    outcomes='label',
-    dataset=test
-    )
-    """
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
