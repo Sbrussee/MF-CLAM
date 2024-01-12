@@ -1,7 +1,6 @@
 import slideflow as sf
 import pandas as pd
 import os
-
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -16,6 +15,8 @@ parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL'
 parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
                     help="MIL model to use", default="Attention MIL")
 parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan'])
+parser.add_argument('-j', '--json_file', default=None,
+                    help="JSON file to load for defining experiments with multiple models/extractors/normalization steps")
 args = parser.parse_args()
 print(args)
 
@@ -95,7 +96,6 @@ def main():
 
 
     """
-
     hp = sf.ModelParams(
     tile_px=512,
     tile_um=128,
