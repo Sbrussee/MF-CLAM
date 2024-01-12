@@ -5,12 +5,12 @@ import os
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-p' '--project_directory',
+parser.add_argument('-p', '--project_directory',
                     help="Directory to store the project")
 parser.add_argument('-s', '--slide_directory',
                     help="Directory where slides are located")
 parser.add_argument('-a', '--annotation_file',
-                    help="CSV file having the slide id's, labels and patient id's. It should contain the 'slide' and 'patient' columns.")
+                    help="CSV file having the slide id's, labels and patient id's. It should, at least, contain a'slide' and 'patient' column.")
 parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL', 'HistoSSL', 'PLIP', 'SimCLR', 'DinoV2', 'resnet50_imagenet'],
                     help="Pretrained feature extractors to use", default="RetCCL")
 parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
@@ -62,7 +62,9 @@ def main():
     train, test = tile_wsis(dataset)
 
     feature_extractor = sf.model.build_feature_extractor(args.feature_extractor.lower(), tile_px=512)
-    bag_directory = project.generate_feature_bags(feature_extractor, dataset)
+    bag_directory = project.generate_feature_bags(feature_extractor,
+                                                  dataset,
+                                                  outdir=f"/bags/{args.feature_extractor.lower()}")
 
     config = sf.mil.mil_config(args.model.lower())
 
@@ -77,11 +79,22 @@ def main():
         outcomes="label",
         train_dataset=train,
         val_dataset=val,
-        bags=bag_directory,
+        bags=f"/bags/{args.feature_extractor.lower()}",
         attention_heatmaps=True,
-        cmap="magma",
-        interpolation=None
+        outdir=f"/model/{args.model.lower()}"
         )
+
+        project.evaluate_mil(
+        model=f"/model/{args.model.lower()}",
+        outcomes="label",
+        dataset=test,
+        bags=f"/bags/{args.feature_extractor.lower()}"
+        config=config,
+        attention_heatmaps=True
+        )
+
+
+    """
 
     hp = sf.ModelParams(
     tile_px=512,
@@ -104,6 +117,7 @@ def main():
     outcomes='label',
     dataset=test
     )
+    """
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
