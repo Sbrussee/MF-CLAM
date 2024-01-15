@@ -23,6 +23,18 @@ print(args)
 
 print("Available feature extractors: ", sf.model.list_extractors())
 
+# Check if GPU is available
+if torch.cuda.is_available():
+    # Get the current GPU device
+    device = torch.cuda.current_device()
+
+    # Get the name of the GPU
+    gpu_name = torch.cuda.get_device_name(device)
+
+    print(f'Using GPU: {gpu_name}')
+else:
+    print('GPU not available. Using CPU.')
+
 if args.json_file != None:
     with open(args.json_file, "r") as params_file:
         params = json.load(params_file)
