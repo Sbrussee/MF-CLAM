@@ -17,7 +17,7 @@ parser.add_argument('-a', '--annotation_file',
                     help="CSV file having the slide id's, labels and patient id's. It should, at least, contain a'slide' and 'patient' column.")
 parser.add_argument('-tf', '--test_fraction', type=float, default=0.2,
                     help="Fraction of dataset to hold apart for testing.")
-parser.add_argument('-k', '--k_fold', type=int, default=5
+parser.add_argument('-k', '--k_fold', type=int, default=5,
                     help="number of folds to use for k-fold cross-validation")
 parser.add_argument('-ts', '--tile_size', type=int, default=256,
                     help="Size of tiles to use in pixels")
@@ -41,7 +41,6 @@ parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 're
 
 parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], default='v3',
                     help="Stain normalization preset parameter sets to use.")
-
 
 parser.add_argument('-j', '--json_file', default=None,
                     help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
