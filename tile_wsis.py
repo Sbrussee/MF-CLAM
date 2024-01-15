@@ -38,6 +38,7 @@ parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_
 #Set normalization parameters
 parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan', 'None'], default="macenko",
                     help="Normalization method to use, the parameter preset is set using --stain_norm_preset ")
+
 parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], default='v3',
                     help="Stain normalization preset parameter sets to use.")
 
@@ -71,11 +72,6 @@ def process_annotation_file(original_path):
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
 def tile_wsis(dataset):
-    if normalization.lower() == 'none':
-        norm = None
-    else:
-        norm = normalization.lower()
-
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
     save_tiles=True,
@@ -162,6 +158,8 @@ def main():
 
     for extractor in tqdm(extractors, desc="Outer extractor loop"):
         for normalization in tqdm(normalizers, desc="Middle normalizer loop"):
+            if normalization.lower() == 'none':
+                normalization = None
             for model in tqdm(models desc="Inner model loop"):
                 extract_features(extractor, normalizer, dataset, project)
 
