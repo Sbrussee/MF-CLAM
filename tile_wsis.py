@@ -23,7 +23,7 @@ parser.add_argument('-ts', '--tile_size', type=int, default=256,
                     help="Size of tiles to use in pixels")
 parser.add_argument('-mg', '--magnification', choices=['40x', '20x', '10x', '5x'], default='40x',
                     help="Magnification level to use")
-parser.add_argument('-ag', '--augmentation', type='str', default='xyjrbn',
+parser.add_argument('-ag', '--augmentation', type=str, default='xyjrbn',
                     help="augmentation methods to use. Can be any combination of x: random x-flip, y: random y-flip, r: random cardinal rotation,\
                      j: random JPEG compression, b: random gaussian blur, n: stain augmentation. e.g. 'xyjn'")
 
