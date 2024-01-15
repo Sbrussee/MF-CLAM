@@ -159,11 +159,11 @@ def main():
         for normalization in tqdm(normalizers, desc="Middle normalizer loop"):
             if normalization.lower() == 'none':
                 normalization = None
-            for model in tqdm(models desc="Inner model loop"):
+            for model in tqdm(models, desc="Inner model loop"):
                 extract_features(extractor, normalizer, dataset, project)
-
+                #Set model configuration
                 config = mil_config(args.model.lower())
-
+                #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
                 labels="label",
