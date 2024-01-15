@@ -56,7 +56,7 @@ def extract_features(extractor, dataset, project):
     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=512)
     bag_directory = project.generate_feature_bags(feature_extractor,
                                                   dataset,
-                                                  outdir=f"/bags/{extractor.lower()}")
+                                                  outdir=f"bags/{extractor.lower()}")
 
 
 def train_mil_model(train, val, test, model, extractor, project, config):
@@ -65,7 +65,7 @@ def train_mil_model(train, val, test, model, extractor, project, config):
     outcomes="label",
     train_dataset=train,
     val_dataset=val,
-    bags=f"/bags/{extractor.lower()}",
+    bags=f"bags/{extractor.lower()}",
     attention_heatmaps=True,
     outdir=f"/model/{model.lower()}"
     )
@@ -74,7 +74,7 @@ def train_mil_model(train, val, test, model, extractor, project, config):
     model=f"/model/{model.lower()}",
     outcomes="label",
     dataset=test,
-    bags=f"/bags/{extractor.lower()}",
+    bags=f"bags/{extractor.lower()}",
     config=config,
     attention_heatmaps=True
     )
