@@ -40,6 +40,7 @@ def tile_wsis(dataset):
     normalizer=args.normalization.lower(),
     save_tiles=True,
     img_format='png',
+    enable_downsample=False
     )
 
     train, test = dataset.split(
@@ -51,14 +52,14 @@ def tile_wsis(dataset):
 
     return train, test
 
-def extract_features(extractor, project):
+def extract_features(extractor, dataset, project):
     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=512)
     bag_directory = project.generate_feature_bags(feature_extractor,
                                                   dataset,
                                                   outdir=f"/bags/{extractor.lower()}")
 
 
-def train_mil_model(model, extractor, project, config):
+def train_mil_model(train, val, test, model, extractor, project, config):
     project.train_mil(
     config=config,
     outcomes="label",
@@ -97,9 +98,9 @@ def main():
 
     if args.json_file != None:
         for extractor in params['feature_extractors']:
-            extract_features(extractor, project)
+            extract_features(extractor, dataset, project)
     else:
-        extract_features(args.feature_extractor, project)
+        extract_features(args.feature_extractor, dataset, project)
 
     config = sf.mil.mil_config(args.model.lower())
 
@@ -112,11 +113,11 @@ def main():
         for extractor in params['feature_extractors']:
             for model in params['mil_models']:
                 for train, val in splits:
-                    train_mil_model(model, extractor, project, config)
+                    train_mil_model(train, vall, test, model, extractor, project, config)
 
     else:
         for train, val in splits:
-            train_mil_model(args.model, args.feature_extractor, project, config)
+            train_mil_model(train, val, test, args.model, args.feature_extractor, project, config)
 
 
 if __name__ == "__main__":
