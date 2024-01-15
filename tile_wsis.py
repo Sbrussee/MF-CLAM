@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import argparse
 import json
+import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--project_directory',
@@ -68,7 +69,7 @@ def extract_features(extractor, dataset, project):
     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=512)
     bag_directory = project.generate_feature_bags(feature_extractor,
                                                   dataset,
-                                                  outdir=f"bags/{extractor.lower()}")
+                                                  outdir=f"{args.project_directory}/bags/{extractor.lower()}")
 
 
 def train_mil_model(train, val, test, model, extractor, project, config):
@@ -77,16 +78,16 @@ def train_mil_model(train, val, test, model, extractor, project, config):
     outcomes="label",
     train_dataset=train,
     val_dataset=val,
-    bags=f"bags/{extractor.lower()}",
+    bags=f"{args.project_directory}/bags/{extractor.lower()}",
     attention_heatmaps=True,
-    outdir=f"/model/{model.lower()}"
+    outdir=f"{args.project_directory}/model/{model.lower()}"
     )
 
     project.evaluate_mil(
-    model=f"/model/{model.lower()}",
+    model=f"{args.project_directory}/model/{model.lower()}",
     outcomes="label",
     dataset=test,
-    bags=f"bags/{extractor.lower()}",
+    bags=f"{args.project_directory}/bags/{extractor.lower()}",
     config=config,
     attention_heatmaps=True
     )
@@ -125,7 +126,7 @@ def main():
         for extractor in params['feature_extractors']:
             for model in params['mil_models']:
                 for train, val in splits:
-                    train_mil_model(train, vall, test, model, extractor, project, config)
+                    train_mil_model(train, val, test, model, extractor, project, config)
 
     else:
         for train, val in splits:
