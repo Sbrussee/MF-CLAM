@@ -2,6 +2,9 @@
    "normalization_methods":[
       "macenko"
    ],
+   "normalization_presets":[
+     "v1"
+   ],
    "feature_extractors":[
       "RetCCL",
       "resnet50_imagenet"
