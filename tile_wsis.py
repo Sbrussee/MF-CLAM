@@ -97,9 +97,9 @@ def main():
 
     if args.json_file != None:
         for extractor in params['feature_extractors']:
-            extract_features(extractor)
+            extract_features(extractor, project)
     else:
-        extract_features(args.feature_extractor)
+        extract_features(args.feature_extractor, project)
 
     config = sf.mil.mil_config(args.model.lower())
 
