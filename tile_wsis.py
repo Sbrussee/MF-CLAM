@@ -113,7 +113,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     )
 
     project.evaluate_mil(
-    model=f"{args.project_directory}/mil/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+    model=f"{args.project_directory}mil/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     outcomes="label",
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
