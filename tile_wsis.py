@@ -71,38 +71,33 @@ def process_annotation_file(original_path):
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
-def extract_number_from_filename(filename):
-    # Use regular expression to extract numeric values from the filename
-    matches = re.findall(r'\d+', filename)
-    # Convert the extracted values to integers and return the maximum
-    return max(map(int, matches), default=0)
-
-def get_highest_number_in_directory(directory_path):
+def get_highest_numbered_filename(directory_path):
     # List all files in the directory
     files = os.listdir(directory_path)
 
     # Filter only files (not directories)
     files = [f for f in files if os.path.isfile(os.path.join(directory_path, f))]
 
-    # Extract numeric values from each filename and find the maximum
-    highest_number = max((extract_number_from_filename(f) for f in files), default=0)
+    # Initialize variables to keep track of the highest number and corresponding filename
+    highest_number = float('-inf')
+    highest_number_filename = None
 
-    # Find the length of the highest number, considering leading zeros
-    num_digits = len(str(highest_number))
+    # Iterate over each file
+    for filename in files:
+        # Get the part before the first '-'
+        first_part = filename.split('-')[0]
 
-    # Construct a regular expression pattern to match leading zeros
-    pattern = re.compile(r'\b0*\d+\b')
+        # Try to convert the first part to a number
+        try:
+            number = int(first_part)
+            # If the converted number is higher than the current highest, update the variables
+            if number > highest_number:
+                highest_number = number
+                highest_number_part = first_part
+        except ValueError:
+            pass  # Ignore non-numeric parts
 
-    # Extract the numbers with leading zeros from filenames
-    numbers_with_zeros = [int(match.group()) for filename in files for match in pattern.finditer(filename)]
-
-    # Find the maximum among the extracted numbers with leading zeros
-    highest_number_with_zeros = max(numbers_with_zeros, default=0)
-
-    # Format the highest number with leading zeros
-    formatted_highest_number_with_zeros = f"{highest_number_with_zeros:0{num_digits}d}"
-
-    return formatted_highest_number_with_zeros
+    return highest_number_part
 
 def tile_wsis(dataset):
     dataset.extract_tiles(
@@ -146,7 +141,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
 
-    current_highest_exp_number = get_highest_number_in_directory(f"{args.project_directory}mil/")
+    current_highest_exp_number = get_highestest_number_filename(f"{args.project_directory}mil/")
 
     project.evaluate_mil(
     model=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
