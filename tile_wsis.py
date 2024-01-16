@@ -2,6 +2,7 @@ import slideflow as sf
 from slideflow.mil import mil_config
 import pandas as pd
 import os
+import re
 import argparse
 import json
 import torch
@@ -70,6 +71,39 @@ def process_annotation_file(original_path):
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
+def extract_number_from_filename(filename):
+    # Use regular expression to extract numeric values from the filename
+    matches = re.findall(r'\d+', filename)
+    # Convert the extracted values to integers and return the maximum
+    return max(map(int, matches), default=0)
+
+def get_highest_number_in_directory(directory_path):
+    # List all files in the directory
+    files = os.listdir(directory_path)
+
+    # Filter only files (not directories)
+    files = [f for f in files if os.path.isfile(os.path.join(directory_path, f))]
+
+    # Extract numeric values from each filename and find the maximum
+    highest_number = max((extract_number_from_filename(f) for f in files), default=0)
+
+    # Find the length of the highest number, considering leading zeros
+    num_digits = len(str(highest_number))
+
+    # Construct a regular expression pattern to match leading zeros
+    pattern = re.compile(r'\b0*\d+\b')
+
+    # Extract the numbers with leading zeros from filenames
+    numbers_with_zeros = [int(match.group()) for filename in files for match in pattern.finditer(filename)]
+
+    # Find the maximum among the extracted numbers with leading zeros
+    highest_number_with_zeros = max(numbers_with_zeros, default=0)
+
+    # Format the highest number with leading zeros
+    formatted_highest_number_with_zeros = f"{highest_number_with_zeros:0{num_digits}d}"
+
+    return formatted_highest_number_with_zeros
+
 def tile_wsis(dataset):
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
@@ -112,8 +146,10 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
 
+    current_highest_exp_number = get_highest_number_in_directory(f"{args.project_directory}mil/")
+
     project.evaluate_mil(
-    model=f"{args.project_directory}mil/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+    model=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     outcomes="label",
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
@@ -121,7 +157,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     attention_heatmaps=True
     )
 
-    result_frame = pd.read_parquet(f"{args.project_directory}/mil/{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
+    result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame
 
 def main():
