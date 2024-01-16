@@ -107,7 +107,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     outcomes="label",
     train_dataset=train,
     val_dataset=val,
-    bags=f"{args.project_directory}/bags/{extractor.lower()}",
+    bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
     attention_heatmaps=True,
     exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
