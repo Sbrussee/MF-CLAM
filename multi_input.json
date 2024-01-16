@@ -1,9 +1,12 @@
 {
    "normalization_methods":[
-      "macenko"
+      "macenko",
+      "vahadane"
    ],
    "normalization_presets":[
-     "v1"
+      "v1",
+      "v2",
+      "v3"
    ],
    "feature_extractors":[
       "RetCCL",
