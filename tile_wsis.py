@@ -109,11 +109,11 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     val_dataset=val,
     bags=f"{args.project_directory}/bags/{extractor.lower()}",
     attention_heatmaps=True,
-    outdir=f"{args.project_directory}/model/{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
+    exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
 
     project.evaluate_mil(
-    model=f"{args.project_directory}/model/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+    model=f"{args.project_directory}/mil/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     outcomes="label",
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
@@ -121,7 +121,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     attention_heatmaps=True
     )
 
-    result_frame = pd.read_parquet(f"{args.project_directory}/model/{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
+    result_frame = pd.read_parquet(f"{args.project_directory}/mil/{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame
 
 def main():
