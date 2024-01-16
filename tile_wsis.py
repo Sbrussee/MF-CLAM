@@ -141,7 +141,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
 
-    current_highest_exp_number = get_highestest_number_filename(f"{args.project_directory}mil/")
+    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
     project.evaluate_mil(
     model=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
