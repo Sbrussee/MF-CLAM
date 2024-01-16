@@ -7,6 +7,7 @@ import argparse
 import json
 import torch
 from tqdm import tqdm
+import pickle
 
 parser = argparse.ArgumentParser()
 #Global arguments
@@ -141,16 +142,18 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
-    project.evaluate_mil(
+    result_frame = project.evaluate_mil(
     model=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     outcomes="label",
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
     config=config,
-    attention_heatmaps=True
+    attention_heatmaps=True,
+    exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
 
-    result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
+    print(result_frame)
+    #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame
 
 def main():
@@ -186,6 +189,9 @@ def main():
     dataset = tile_wsis(dataset)
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
+
+    results = {}
+
     for extractor in tqdm(extractors, desc="Outer extractor loop"):
         for normalizer in tqdm(normalizers, desc="Middle normalizer loop"):
             if normalizer.lower() == 'none':
@@ -199,10 +205,20 @@ def main():
                 k=args.k_fold,
                 labels="label",
                 )
-
+                split_index = 0
                 for train, val in splits:
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
-                    print(extractor, normalizer, model, result_frame)
+                    #print(extractor, normalizer, model, result_frame)
+                    results["_".join([extractor, normalizer, model, str(split_index)])] = result_frame
+
+                    split_index += 1
+            print(results.keys())
+
+    with open("test_run.pkl", 'wb') as f:
+        pickle.dump(results)
+
+
+
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
