@@ -121,6 +121,8 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     attention_heatmaps=True
     )
 
+    result_frame = pd.read_parquet(f"{args.project_directory}/model/{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
+    return result_frame
 
 def main():
 
@@ -156,9 +158,9 @@ def main():
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
     for extractor in tqdm(extractors, desc="Outer extractor loop"):
-        for normalization in tqdm(normalizers, desc="Middle normalizer loop"):
-            if normalization.lower() == 'none':
-                normalization = None
+        for normalizer in tqdm(normalizers, desc="Middle normalizer loop"):
+            if normalizer.lower() == 'none':
+                normalizer = None
             for model in tqdm(models, desc="Inner model loop"):
                 extract_features(extractor, normalizer, dataset, project)
                 #Set model configuration
@@ -170,8 +172,8 @@ def main():
                 )
 
                 for train, val in splits:
-                    train_mil_model(train, val, test, model, extractor, normalizer, project, config)
-
+                    result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
+                    print(extractor, normalizer, model, result_frame)
 
 if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
