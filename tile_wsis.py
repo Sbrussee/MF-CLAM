@@ -75,9 +75,6 @@ def get_highest_numbered_filename(directory_path):
     # List all files in the directory
     files = os.listdir(directory_path)
 
-    # Filter only files (not directories)
-    files = [f for f in files if os.path.isfile(os.path.join(directory_path, f))]
-
     # Initialize variables to keep track of the highest number and corresponding filename
     highest_number = float('-inf')
     highest_number_filename = None
@@ -97,6 +94,7 @@ def get_highest_numbered_filename(directory_path):
         except ValueError:
             pass  # Ignore non-numeric parts
 
+    print(highest_number_part)
     return highest_number_part
 
 def tile_wsis(dataset):
