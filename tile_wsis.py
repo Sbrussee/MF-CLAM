@@ -11,6 +11,7 @@ import json
 import torch
 from tqdm import tqdm
 import pickle
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 #Global arguments
@@ -196,9 +197,9 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     plt.ylabel("True Positive Rate")
     plt.title("Receiver operating characteristic example")
     plt.legend(loc="lower right")
-    plt.savefig("test.png")
+    plt.savefig(f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}/roc_auc_test.png")
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
-    return result_frame, balanced_accuracy
+    return result_frame, balanced_accuracy, roc_auc
 
 def main():
 
@@ -236,6 +237,8 @@ def main():
 
     results = {}
 
+    columns = ['normalization', 'feature_extractor', 'mil_model', 'split', 'balanced_accuracy', 'auc']
+    df = pd.DataFrame(columns=columns)
     for extractor in tqdm(extractors, desc="Outer extractor loop"):
         for normalizer in tqdm(normalizers, desc="Middle normalizer loop"):
             if normalizer.lower() == 'none':
@@ -252,12 +255,15 @@ def main():
                 )
                 split_index = 0
                 for train, val in splits:
-                    result_frame, balanced_accuracy = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
+                    result_frame, balanced_accuracy, roc_auc = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
                     print("Balanced Accuracy: ", balanced_accuracy)
+                    df.append(normalizer, extractor, model, split_index, balanced_accuracy, roc_auc)
                     split_index += 1
-            print(results.keys())
+
+
+    df.to_csv(f"{args.project_directory}/results_{datetime.now().strftime("%d/%m/%Y_%H:%M:%S")}.csv", index=False)
 
     with open("test_run.pkl", 'wb') as f:
         pickle.dump(results)
