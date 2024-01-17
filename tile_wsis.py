@@ -196,7 +196,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     plt.ylabel("True Positive Rate")
     plt.title("Receiver operating characteristic example")
     plt.legend(loc="lower right")
-    plt.show()
+    plt.savefig("test.png")
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame, m, balanced_accuracy
 
