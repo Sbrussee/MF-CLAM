@@ -149,7 +149,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
     config=config,
-    outdir=f"{args.project_directory}/mil_eval/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+    outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     attention_heatmaps=True,
     cmap="coolwarm"
     )
