@@ -29,6 +29,13 @@ parser.add_argument('-mg', '--magnification', choices=['40x', '20x', '10x', '5x'
 parser.add_argument('-ag', '--augmentation', type=str, default='xyjrbn',
                     help="augmentation methods to use. Can be any combination of x: random x-flip, y: random y-flip, r: random cardinal rotation,\
                      j: random JPEG compression, b: random gaussian blur, n: stain augmentation. e.g. 'xyjn'")
+parser.add_argument('-l', '--aggregation_level', choices=['patient', 'slide'],
+                    help="Level of bag aggregation to use, can be 'patient' or 'slide'.")
+parser.add_argument('b', '--training_balance', choices-['tile', 'slide', 'patient', 'category'],
+                    help="Balances batches for training. tile causes each tile to be sampled with equal probability,\
+                    slide causes batches to be sampled on the same slide with equal probability,\
+                    patient causes batches to be sampled from the same patient with equal probability,\
+                    category makes sure the categorical outcome labeled are sampled with equal probability")
 
 #Set feature extractor
 parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL', 'HistoSSL', 'PLIP', 'SimCLR', 'DinoV2', 'resnet50_imagenet'],
@@ -117,6 +124,9 @@ def split_dataset(dataset, test_fraction=0.2):
     val_strategy='fixed',
     val_fraction=test_fraction
     )
+
+    train = train.balance(strategy=args.training_balance)
+
     return train, test
 
 
@@ -202,7 +212,8 @@ def main():
             for model in tqdm(models, desc="Inner model loop"):
                 extract_features(extractor, normalizer, dataset, project)
                 #Set model configuration
-                config = mil_config(args.model.lower())
+                config = mil_config(args.model.lower(),
+                aggregation_level=args.aggregation_level)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
