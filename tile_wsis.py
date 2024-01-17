@@ -2,6 +2,7 @@ import slideflow as sf
 from slideflow.mil import mil_config
 import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
+from sklearn.metrics import balanced_accuracy_score
 import pandas as pd
 import os
 import re
@@ -175,8 +176,9 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             y_pred=result_frame[f'y_pred{idx}'].values
         )
 
+    balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), result_frame[f'y_pred{idx}'].values)
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
-    return result_frame, m
+    return result_frame, m, balanced_accuracy
 
 def main():
 
@@ -233,7 +235,8 @@ def main():
                     result_frame, m = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = m
-                    print(m)
+                    print("Slideflow metrics: ", m)
+                    print("Balanced Accuracy: ", balanced_accuracy)
                     split_index += 1
             print(results.keys())
 
