@@ -143,13 +143,13 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
-    result_frame = project.evaluate_mil(
-    model=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+    result_frame = project.eval_mil(
+    weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     outcomes="label",
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
     config=config,
-    exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+    outdir=f"{args.project_directory}/mil_eval/{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     attention_heatmaps=True,
     cmap="coolwarm"
     )
