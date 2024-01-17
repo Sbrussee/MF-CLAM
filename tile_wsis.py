@@ -198,7 +198,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     plt.legend(loc="lower right")
     plt.savefig("test.png")
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
-    return result_frame, m, balanced_accuracy
+    return result_frame, balanced_accuracy
 
 def main():
 
@@ -252,10 +252,9 @@ def main():
                 )
                 split_index = 0
                 for train, val in splits:
-                    result_frame, m = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
+                    result_frame, balanced_accuracy = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     #print(extractor, normalizer, model, result_frame)
-                    results["_".join([extractor, normalizer, model, str(split_index)])] = m
-                    print("Slideflow metrics: ", m)
+                    results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
                     print("Balanced Accuracy: ", balanced_accuracy)
                     split_index += 1
             print(results.keys())
