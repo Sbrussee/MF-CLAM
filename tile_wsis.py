@@ -263,7 +263,8 @@ def main():
                     split_index += 1
 
 
-    df.to_csv(f"{args.project_directory}/results_{datetime.now().strftime("%d/%m/%Y_%H:%M:%S")}.csv", index=False)
+    date = datetime.now().strftime("%d/%m/%Y_%H:%M:%S")
+    df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
 
     with open("test_run.pkl", 'wb') as f:
         pickle.dump(results)
