@@ -1,6 +1,7 @@
 import slideflow as sf
 from slideflow.mil import mil_config
 import slideflow.mil as mil
+from slideflow.stats.metrics import ClassifierMetrics
 import pandas as pd
 import os
 import re
@@ -166,8 +167,16 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     )
 
     print(result_frame)
+
+    y_pred_cols = [c for c in result_frame.columns if c.startswith('y_pred')]
+    for idx in range(len(y_pred_cols)):
+        m = ClassifierMetrics(
+            y_true=(result_frame.y_true.values == idx).astype(int),
+            y_pred=result_frame[f'y_pred{idx}'].values
+        )
+
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
-    return result_frame
+    return result_frame, m
 
 def main():
 
@@ -221,10 +230,10 @@ def main():
                 )
                 split_index = 0
                 for train, val in splits:
-                    result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
+                    result_frame, m = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     #print(extractor, normalizer, model, result_frame)
-                    results["_".join([extractor, normalizer, model, str(split_index)])] = result_frame
-
+                    results["_".join([extractor, normalizer, model, str(split_index)])] = m
+                    print(m)
                     split_index += 1
             print(results.keys())
 
