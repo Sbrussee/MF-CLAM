@@ -34,7 +34,7 @@ parser.add_argument('-ag', '--augmentation', type=str, default='xyjrbn',
                      j: random JPEG compression, b: random gaussian blur, n: stain augmentation. e.g. 'xyjn'")
 parser.add_argument('-l', '--aggregation_level', choices=['patient', 'slide'],
                     help="Level of bag aggregation to use, can be 'patient' or 'slide'.")
-parser.add_argument('b', '--training_balance', choices-['tile', 'slide', 'patient', 'category'],
+parser.add_argument('b', '--training_balance', choices=['tile', 'slide', 'patient', 'category'],
                     help="Balances batches for training. tile causes each tile to be sampled with equal probability,\
                     slide causes batches to be sampled on the same slide with equal probability,\
                     patient causes batches to be sampled from the same patient with equal probability,\
