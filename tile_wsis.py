@@ -137,6 +137,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     val_dataset=val,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
     attention_heatmaps=True,
+    cmap="coolwarm",
     exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
     )
 
@@ -148,8 +149,9 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     dataset=test,
     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
     config=config,
+    exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
     attention_heatmaps=True,
-    exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
+    cmap="coolwarm"
     )
 
     print(result_frame)
