@@ -177,6 +177,26 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
         )
 
     balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), result_frame[f'y_pred{idx}'].values)
+    fpr, tpr, auroc = m.fpr, m.tpr, m.auroc
+    print(balanced_accuracy, fpr, tpr, auroc)
+
+    plt.figure()
+    lw = 2
+    plt.plot(
+        fpr,
+        tpr,
+        color="darkorange",
+        lw=lw,
+        label="ROC curve (area = %0.2f)" % roc_auc,
+    )
+    plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Receiver operating characteristic example")
+    plt.legend(loc="lower right")
+    plt.show()
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame, m, balanced_accuracy
 
