@@ -179,9 +179,9 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             y_pred=result_frame[f'y_pred{idx}'].values
         )
 
-        fpr, tpr, auroc = m.fpr, m.tpr, m.auroc
+        fpr, tpr, auroc, threshold = m.fpr, m.tpr, m.auro, m.threshold
         optimal_idx = np.argmax(tpr-fpr)
-        optimal_threshold = thresholds[optimal_idx]
+        optimal_threshold = threshold[optimal_idx]
         print(optimal_threshold)
         y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
         balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), y_pred_binary)
