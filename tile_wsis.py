@@ -196,7 +196,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             tpr[index],
             color=colors[index],
             lw=lw,
-            label="%: ROC curve (area = %0.2f)" % c, roc_auc
+            label=("%: ROC curve (area = %0.2f)" % c, roc_auc)
         )
     plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
     plt.xlim([0.0, 1.0])
