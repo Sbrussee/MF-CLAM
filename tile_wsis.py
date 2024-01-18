@@ -185,6 +185,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
         y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
         balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), y_pred_binary)
 
+    print(fpr, tpr)
     plt.figure()
     lw = 2
     colors =  plt.cm.jet(np.linspace(0,1,len(y_pred_cols)))
@@ -194,8 +195,8 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             tpr[index],
             color=colors[index],
             lw=lw,
-            label=("% : ROC curve (area = %0.2f)" % c, roc_auc)
-        )
+            label=f"ROC curve {c}: "+"(area = %0.2f)" % roc_auc,
+            )
     plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
