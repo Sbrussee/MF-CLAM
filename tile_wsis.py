@@ -12,6 +12,8 @@ import torch
 from tqdm import tqdm
 import pickle
 from datetime import datetime
+import matplotlib.pyplot as plt
+import numpy as np
 
 parser = argparse.ArgumentParser()
 #Global arguments
@@ -177,29 +179,35 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             y_pred=result_frame[f'y_pred{idx}'].values
         )
 
-    balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), result_frame[f'y_pred{idx}'].values)
-    fpr, tpr, auroc = m.fpr, m.tpr, m.auroc
-    print(balanced_accuracy, fpr, tpr, auroc)
+        fpr, tpr, auroc = m.fpr, m.tpr, m.auroc
+        optimal_idx = np.argmax(tpr-fpr)
+        optimal_threshold = thresholds[optimal_idx]
+        print(optimal_threshold)
+        y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
+        balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), y_pred_binary)
+        print(balanced_accuracy)
 
     plt.figure()
     lw = 2
-    plt.plot(
-        fpr,
-        tpr,
-        color="darkorange",
-        lw=lw,
-        label="ROC curve (area = %0.2f)" % roc_auc,
-    )
+    colors =  plt.cm.jet(np.linspace(0,1,len(y_pred_cols)))
+    for index, class in enumerate(y_pred_cols):
+        plt.plot(
+            fpr[index],
+            tpr[index],
+            color=colors[index],
+            lw=lw,
+            label="%: ROC curve (area = %0.2f)" % class, roc_auc
+        )
     plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title("Receiver operating characteristic example")
+    plt.title("ROC-AUC")
     plt.legend(loc="lower right")
     plt.savefig(f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}/roc_auc_test.png")
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
-    return result_frame, balanced_accuracy, roc_auc
+    return result_frame, balanced_accuracy, auroc
 
 def main():
 
