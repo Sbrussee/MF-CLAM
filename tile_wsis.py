@@ -188,15 +188,13 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     print(fpr, tpr)
     plt.figure()
     lw = 2
-    colors =  plt.cm.jet(np.linspace(0,1,len(y_pred_cols)))
-    for index, c in enumerate(y_pred_cols):
-        plt.plot(
-            fpr[index],
-            tpr[index],
-            color=colors[index],
-            lw=lw,
-            label=f"ROC curve {c}: "+"(area = %0.2f)" % roc_auc,
-            )
+    plt.plot(
+        fpr,
+        tpr,
+        color="orange",
+        lw=lw,
+        label=f"ROC curve (area = %0.2f)" % auroc,
+        )
     plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
