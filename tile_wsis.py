@@ -128,7 +128,7 @@ def split_dataset(dataset, test_fraction=0.2):
     val_fraction=test_fraction
     )
 
-    train = train.balance(strategy=args.training_balance)
+    train = train.balance(headers='label', strategy=args.training_balance)
 
     return train, test
 
