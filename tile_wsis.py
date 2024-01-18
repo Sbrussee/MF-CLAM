@@ -264,7 +264,15 @@ def main():
                     #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
                     print("Balanced Accuracy: ", balanced_accuracy)
-                    df.append(normalizer, extractor, model, split_index, balanced_accuracy, roc_auc)
+                    data = {
+                    'normalization' : normalizer,
+                    'feature_extractor' : extractor,
+                    'mil_model' : model,
+                    'split': split_index,
+                    'balanced_accuracy' : balanced_accuracy,
+                    'auc' : roc_auc
+                    }
+                    df.append(data, ignore_index=True)
                     split_index += 1
 
 
