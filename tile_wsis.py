@@ -179,7 +179,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             y_pred=result_frame[f'y_pred{idx}'].values
         )
 
-        fpr, tpr, auroc, threshold = m.fpr, m.tpr, m.auro, m.threshold
+        fpr, tpr, auroc, threshold = m.fpr, m.tpr, m.auroc, m.threshold
         optimal_idx = np.argmax(tpr-fpr)
         optimal_threshold = threshold[optimal_idx]
         print(optimal_threshold)
