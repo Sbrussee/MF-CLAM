@@ -60,8 +60,9 @@ parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], de
 parser.add_argument('-j', '--json_file', default=None,
                     help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
 args = parser.parse_args()
+#Print chosen arguments
 print(args)
-
+#Print available feature extractors
 print("Available feature extractors: ", sf.model.list_extractors())
 
 # Check if GPU is available
@@ -76,6 +77,7 @@ if torch.cuda.is_available():
 else:
     print('GPU not available. Using CPU.')
 
+#Check if JSON file should be used
 if args.json_file != None:
     with open(args.json_file, "r") as params_file:
         params = json.load(params_file)
@@ -151,6 +153,7 @@ def read_validation_set():
     slides="../../ValidationSetJune2023",
     annotations="train_list_validation_easy_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
+    tiles=f"{args.project_directory}/tiles/ext_set",
     tile_px=args.tile_size,
     tile_um=args.magnification,
     filters={'label' : ['MF', 'dermatitis']}
@@ -164,31 +167,56 @@ def read_validation_set():
 
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
-    project.train_mil(
-    config=config,
-    outcomes="label",
-    train_dataset=train,
-    val_dataset=val,
-    bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
-    #attention_heatmaps=True,
-    #cmap="coolwarm",
-    exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
-    )
 
-    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
+    if args.aggregation_level == 'patient':
+        project.train_mil(
+        config=config,
+        outcomes="label",
+        train_dataset=train,
+        val_dataset=val,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
+        #attention_heatmaps=True,
+        #cmap="coolwarm",
+        exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
+        )
 
-    result_frame = mil.eval_mil(
-    weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-    outcomes="label",
-    dataset=test,
-    bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
-    config=config,
-    outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-    #attention_heatmaps=True,
-    #cmap="coolwarm"
-    )
+        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
-    print(result_frame)
+        result_frame = mil.eval_mil(
+        weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+        outcomes="label",
+        dataset=test,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
+        config=config,
+        outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+        #attention_heatmaps=True,
+        #cmap="coolwarm"
+        )
+
+    elif args.aggregation_level == 'slide':
+        project.train_mil(
+        config=config,
+        outcomes="label",
+        train_dataset=train,
+        val_dataset=val,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
+        attention_heatmaps=True,
+        cmap="coolwarm",
+        exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
+        )
+
+        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
+
+        result_frame = mil.eval_mil(
+        weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+        outcomes="label",
+        dataset=test,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
+        config=config,
+        outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+        attention_heatmaps=True,
+        cmap="coolwarm"
+        )
     return result_frame
 
 
