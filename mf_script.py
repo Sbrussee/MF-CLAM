@@ -202,12 +202,12 @@ def visualize_results(result_frame, ext_set=False):
         fpr, tpr, auroc, threshold = m.fpr, m.tpr, m.auroc, m.threshold
         optimal_idx = np.argmax(tpr-fpr)
         optimal_threshold = threshold[optimal_idx]
-        print(optimal_threshold)
         y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
         balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), y_pred_binary)
-        print(balanced_accuracy)
+        print(f"BA cat #{idx}: {balanced_accuracy}
 
-    print(fpr, tpr)
+
+    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
     plt.figure()
     lw = 2
     colors =  plt.cm.jet(np.linspace(0,1,len(y_pred_cols)))
@@ -318,6 +318,7 @@ def main():
                                                                   normalizer=normalizer,
                                                                   normalizer_source=args.stain_norm_preset,
                                                                   augment=args.augmentation)
+
 
                     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
