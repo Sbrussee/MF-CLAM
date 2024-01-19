@@ -310,7 +310,7 @@ def main():
 
                     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
                     bag_directory = project.generate_feature_bags(feature_extractor,
-                                                                  dataset,
+                                                                  ext_test,
                                                                   outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
                                                                   normalizer=normalizer,
                                                                   normalizer_source=args.stain_norm_preset,
