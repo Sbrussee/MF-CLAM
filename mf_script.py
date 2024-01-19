@@ -150,7 +150,7 @@ def read_validation_set():
     process_annotation_file("../../train_list_validation_easy.csv")
 
     test_set = sf.Dataset(
-    slides="../../ValidationSetJune2023",
+    slides="../../ValidationSetJune2023/",
     annotations="train_list_validation_easy_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
@@ -160,8 +160,6 @@ def read_validation_set():
     )
 
     test_set = tile_wsis(test_set)
-
-
 
     return test_set
 
