@@ -217,7 +217,7 @@ def visualize_results(result_frame, ext_set=False):
             tpr[index],
             color=colors[index],
             lw=lw,
-            label=f"ROC curve {c}: "+"(area = %0.2f)" % roc_auc,
+            label=f"ROC curve {c}: "+"(area = %0.2f)" % auroc,
             )
 
     plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
