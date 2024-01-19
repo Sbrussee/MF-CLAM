@@ -150,6 +150,7 @@ def read_validation_set():
     test_set = sf.Dataset(
     slides="../../ValidationSetJune2023",
     annotations="train_list_validation_easy_slideflow.csv",
+    tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tile_px=args.tile_size,
     tile_um=args.magnification,
     filters={'label' : ['MF', 'dermatitis']}
