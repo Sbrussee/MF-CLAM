@@ -191,7 +191,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     return result_frame
 
 
-def visualize_results(result_frame, ext_set=False):
+def visualize_results(result_frame, model, extractor, normalizer, ext_set=False):
     y_pred_cols = [c for c in result_frame.columns if c.startswith('y_pred')]
     for idx in range(len(y_pred_cols)):
         m = ClassifierMetrics(
@@ -293,7 +293,7 @@ def main():
                 best_roc_auc = 0
                 for train, val in splits:
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
-                    result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame)
+                    result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
 
                     #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
@@ -333,7 +333,7 @@ def main():
                     #cmap="coolwarm"
                     )
 
-                    result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame)
+                    result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame, model, extractor, normalizer)
                     data = {
                     'normalization' : normalizer,
                     'feature_extractor' : extractor,
