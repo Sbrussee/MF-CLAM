@@ -268,7 +268,7 @@ def main():
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
     #overwrite test with external validation set
-    ext_test = read_validation_set(project)
+    ext_test = read_validation_set()
 
     results = {}
 
