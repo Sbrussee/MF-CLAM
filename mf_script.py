@@ -204,7 +204,7 @@ def visualize_results(result_frame, ext_set=False):
         optimal_threshold = threshold[optimal_idx]
         y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
         balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), y_pred_binary)
-        print(f"BA cat #{idx}: {balanced_accuracy}
+        print(f"BA cat #{idx}: {balanced_accuracy}")
 
 
     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
