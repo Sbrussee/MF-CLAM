@@ -210,16 +210,13 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
     plt.figure()
     lw = 2
-    colors =  plt.cm.jet(np.linspace(0,1,len(y_pred_cols)))
-    for index, c in enumerate(y_pred_cols):
-        plt.plot(
-            fpr[index],
-            tpr[index],
-            color=colors[index],
-            lw=lw,
-            label=f"ROC curve {c}: "+"(area = %0.2f)" % auroc,
-            )
-
+    plt.plot(
+        fpr,
+        tpr,
+        color="orange",
+        lw=lw,
+        label=f"ROC curve (area = %0.2f)" % auroc,
+        )
     plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -325,7 +322,7 @@ def main():
                     result_frame = mil.eval_mil(
                     weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
                     outcomes="label",
-                    dataset=test,
+                    dataset=ext_test,
                     bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
                     config=config,
                     outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
@@ -333,7 +330,7 @@ def main():
                     #cmap="coolwarm"
                     )
 
-                    result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame, model, extractor, normalizer)
+                    result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame, model, extractor, normalizer, ext_set=True)
                     data = {
                     'normalization' : normalizer,
                     'feature_extractor' : extractor,
