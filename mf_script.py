@@ -342,8 +342,6 @@ def main():
                     df = df.append(data, ignore_index=True)
                     print(df)
 
-                    split_index += 1
-
 
                     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
                     bag_directory = project.generate_feature_bags(feature_extractor,
@@ -378,6 +376,8 @@ def main():
                     }
                     ext_df = ext_df.append(data, ignore_index=True)
                     print(ext_df)
+
+                    split_index += 1
 
 
     #Summarize over splits
