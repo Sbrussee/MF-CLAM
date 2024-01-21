@@ -60,8 +60,10 @@ parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], de
 parser.add_argument('-j', '--json_file', default=None,
                     help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
 args = parser.parse_args()
-print(args)
 
+#Print chosen arguments
+print(args)
+#Print available feature extraction methods
 print("Available feature extractors: ", sf.model.list_extractors())
 
 # Check if GPU is available
@@ -76,16 +78,38 @@ if torch.cuda.is_available():
 else:
     print('GPU not available. Using CPU.')
 
+#Check whether JSON file should be used
 if args.json_file != None:
+    #Load parameters from JSON file
     with open(args.json_file, "r") as params_file:
         params = json.load(params_file)
 
-def process_annotation_file(original_path):
+def process_annotation_file(original_path : str):
+    """
+    Parameters:
+        -original_path: Path to the annotation file to be processed.
+
+    This function renames the columns 'case_id' and 'slide_id' to 'patient' and 'slide'
+    in the annotation file, in order to make it suitable for slideflow.
+
+    """
     df = pd.read_csv(original_path)
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
-def get_highest_numbered_filename(directory_path):
+
+def get_highest_numbered_filename(directory_path : str):
+    """
+    Parameters:
+        -directory_path: Path to the directory where the filenames should be checked.
+
+    This helper function returns the filename in a given directory with the highest
+    numeric value in its name, including leadining zeros. This is useful when
+    accessing the last trained model for example.
+
+    Returns:
+        -highest_number_part: The filename of the highest numbered file.
+    """
     # List all files in the directory
     files = os.listdir(directory_path)
 
@@ -108,21 +132,41 @@ def get_highest_numbered_filename(directory_path):
         except ValueError:
             pass  # Ignore non-numeric parts
 
-    print(highest_number_part)
     return highest_number_part
 
-def tile_wsis(dataset):
+def tile_wsis(dataset : sf.Dataset):
+    """
+    Parameters:
+        -dataset: Slideflow dataset to extract tiles from
+
+    Extracts and then saves tiles from a slideflow dataset objects.
+
+    Returns:
+        -dataset: Slideflow dataset with extracted tiles
+    """
     dataset.extract_tiles(
     qc='both', #Both use Otsu Thresholding and Blur detection
     save_tiles=True,
     img_format='png',
     enable_downsample=False
     )
-
     return dataset
 
 
-def split_dataset(dataset, test_fraction=0.2):
+def split_dataset(dataset : sf.Dataset, test_fraction=0.2 : float):
+    """
+    Parameters:
+        -dataset: Slideflow dataset to split
+        -test_fraction: Fraction of data to use as test set
+
+    This function splits a slideflow dataset into a training and testing set.
+    It then balances the training dataset based on the specified training
+    balance hyperparameter.
+
+    Returns:
+        -train: training dataset
+        -test: test dataset
+    """
     train, test = dataset.split(
     model_type="categorical",
     labels="label",
@@ -135,7 +179,13 @@ def split_dataset(dataset, test_fraction=0.2):
     return train, test
 
 
-def extract_features(extractor, normalizer, dataset, project):
+def extract_features(extractor : str, normalizer : str, dataset : sf.Dataset, project: sf.Project):
+    """
+    Extractor:
+
+
+
+    """
     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
     bag_directory = project.generate_feature_bags(feature_extractor,
                                                   dataset,
@@ -276,7 +326,7 @@ def main():
                     split_index += 1
 
 
-    date = datetime.now().strftime("%d/%m/%Y_%H:%M:%S")
+    date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
     df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
 
     with open("test_run.pkl", 'wb') as f:

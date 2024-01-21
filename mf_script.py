@@ -369,7 +369,7 @@ def main():
                     ext_df.append(data, ignore_index=True)
 
 
-    date = datetime.now().strftime("%d/%m/%Y_%H:%M:%S")
+    date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
     df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
     ext_df.to_csv(f"{args.project_directory}/ext_set_results_{date}.csv", index=False)
 
