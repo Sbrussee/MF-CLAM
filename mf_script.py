@@ -219,6 +219,9 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
 
 def visualize_results(result_frame, model, extractor, normalizer, ext_set=False):
+
+
+    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
     y_pred_cols = [c for c in result_frame.columns if c.startswith('y_pred')]
     for idx in range(len(y_pred_cols)):
         m = ClassifierMetrics(
@@ -241,7 +244,6 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
         print(f"BA cat #{idx}: {balanced_accuracy}")
 
 
-    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
     plt.figure()
     lw = 2
     plt.plot(
