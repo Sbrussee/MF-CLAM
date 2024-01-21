@@ -230,7 +230,7 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
         optimal_idx = np.argmax(tpr-fpr)
         optimal_threshold = threshold[optimal_idx]
         y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
-        conf_mat = confusion_matrix(((result_frame.y_true.values == idx).astype(int), y_pred_binary, normalize='all', labels=np.array([0,1]))
+        conf_mat = confusion_matrix(y_true=(result_frame.y_true.values == idx).astype(int), y_pred=y_pred_binary, normalize='all', labels=np.array([0,1]))
         display = ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=['MF', 'BID'])
         display.plot()
         if ext_set:
@@ -378,12 +378,33 @@ def main():
                     print(ext_df)
 
 
+    #Summarize over splits
+    grouped_df = df.groupby(['normalization', 'feature_extractor', 'mil_model'])
+    ext_grouped_df = ext_df.groupby(['normalization', 'feature_extractor', 'mil_model'])
+
+    result_df = grouped_df.agg({
+    'balanced_accuracy' : ['mean', 'std'],
+    'auc' : ['mean', 'std']
+    })
+
+    ext_result_df = ext_grouped_df.agg({
+    'balanced_accuracy' : ['mean', 'std'],
+    'auc' : ['mean', 'std']
+    })
+
+    result_df.columns = ['_'.join(col).strip('_') for col in result_df.columns.values]
+    ext_result_df.columns = ['_'.join(col).strip('_') for col in result_df.columns.values]
+
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
-    df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
-    ext_df.to_csv(f"{args.project_directory}/ext_set_results_{date}.csv", index=False)
+
+    df.to_csv(f"{args.project_directory}/results_{date}_full.csv", index=False)
+    result_df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
+
+    ext_df.to_csv(f"{args.project_directory}/ext_set_results_{date}_full.csv", index=False)
+    ext_result_df.to_csv(f"{args.project_directory}/ext_set_results_{date}.csv", index=False)
 
     with open("test_run.pkl", 'wb') as f:
-        pickle.dump(results)
+        pickle.dump(results, f)
 
 
 
