@@ -337,7 +337,8 @@ def main():
                     'balanced_accuracy' : balanced_accuracy,
                     'auc' : roc_auc
                     }
-                    df.append(data, ignore_index=True)
+                    df = df.append(data, ignore_index=True)
+                    print(df)
 
                     split_index += 1
 
@@ -373,7 +374,8 @@ def main():
                     'balanced_accuracy' : balanced_accuracy,
                     'auc' : roc_auc
                     }
-                    ext_df.append(data, ignore_index=True)
+                    ext_df = ext_df.append(data, ignore_index=True)
+                    print(ext_df)
 
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
