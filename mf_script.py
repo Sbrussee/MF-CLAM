@@ -2,7 +2,7 @@ import slideflow as sf
 from slideflow.mil import mil_config
 import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import pandas as pd
 import os
 import re
@@ -230,6 +230,13 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
         optimal_idx = np.argmax(tpr-fpr)
         optimal_threshold = threshold[optimal_idx]
         y_pred_binary = (result_frame[f'y_pred{idx}'].values > optimal_threshold).astype(int)
+        conf_mat = confusion_matrix(((result_frame.y_true.values == idx).astype(int), y_pred_binary, normalize='all', labels=np.array([0,1]))
+        display = ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=['MF', 'BID'])
+        display.plot()
+        if ext_set:
+            plt.savefig(f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set/conf_mat_test.png")
+        else:
+            plt.savefig(f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}/conf_mat_test.png")
         balanced_accuracy = balanced_accuracy_score((result_frame.y_true.values == idx).astype(int), y_pred_binary)
         print(f"BA cat #{idx}: {balanced_accuracy}")
 
