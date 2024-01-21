@@ -85,8 +85,7 @@ if args.json_file != None:
 def process_annotation_file(original_path):
     df = pd.read_csv(original_path)
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
-
-    df.iloc[:, 0] = df.iloc[:, 0].apply(lambda x: f"'{x}.tiff'")
+    print("Processed annotation file: ", df)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
 
 def get_highest_numbered_filename(directory_path):
@@ -157,8 +156,7 @@ def read_validation_set():
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
     tile_px=args.tile_size,
-    tile_um=args.magnification,
-    filters={'label' : ['MF', 'dermatitis']}
+    tile_um=args.magnification
     )
 
     test_set = tile_wsis(test_set)
