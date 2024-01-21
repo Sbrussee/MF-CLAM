@@ -322,7 +322,7 @@ def main():
                     'balanced_accuracy' : balanced_accuracy,
                     'auc' : roc_auc
                     }
-                    df.append(data, ignore_index=True)
+                    df = df.append(data, ignore_index=True)
                     split_index += 1
 
 
