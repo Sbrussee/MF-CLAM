@@ -385,17 +385,21 @@ def main():
     ext_grouped_df = ext_df.groupby(['normalization', 'feature_extractor', 'mil_model'])
 
     result_df = grouped_df.agg({
+    'normalization' : 'first',
+    'feature_extractor' : 'first',
+    'mil_model' : 'first',
     'balanced_accuracy' : ['mean', 'std'],
     'auc' : ['mean', 'std']
     })
 
     ext_result_df = ext_grouped_df.agg({
+    'normalization' : 'first',
+    'feature_extractor' : 'first',
+    'mil_model' : 'first',
     'balanced_accuracy' : ['mean', 'std'],
     'auc' : ['mean', 'std']
     })
 
-    result_df.columns = ['_'.join(col).strip('_') for col in result_df.columns.values]
-    ext_result_df.columns = ['_'.join(col).strip('_') for col in result_df.columns.values]
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
 
