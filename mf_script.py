@@ -454,4 +454,4 @@ if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
     if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
-    main(easy=True, validataion=False)
+    main(easy=True, validation=False)
