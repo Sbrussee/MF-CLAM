@@ -147,6 +147,25 @@ def extract_features(extractor, normalizer, dataset, project):
                                                   normalizer_source=args.stain_norm_preset,
                                                   augment=args.augmentation)
 
+def read_easy_set():
+    easy_df = df.read_csv("/../../train_list_easy_only.csv")
+    easy_df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
+    easy_df.replace(';;', '', inplace=True)
+    print("Processed easy annotation file: ", easy_df)
+    easy_df.to_csv("train_list_easy_only_slideflow.csv")
+
+    easy_set = sf.Dataset(
+    slides = '../../MF_AI_dataset_cropped',
+    annotations="train_list_easy_only_slideflow.csv",
+    tfrecords=f"{args.project_directory}/tiles/easy_set}",
+    tile_px = args.tile_size,
+    tile_um = args.magnification
+    )
+
+    easy_set = tile_wsis(easy_set)
+
+    return easy_set
+
 def read_validation_set():
     process_annotation_file("../../train_list_validation_easy.csv")
 
@@ -267,7 +286,7 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame, balanced_accuracy, auroc
 
-def main():
+def main(easy=False, validation=False):
 
     #Create project directory
     if not os.path.exists(args.project_directory):
@@ -300,14 +319,21 @@ def main():
     dataset = tile_wsis(dataset)
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
+    if easy:
+        train = read_easy_set()
+        train.balance(headers='label', strategy=args.training_balance)
+
+        test = dataset
     #overwrite test with external validation set
-    ext_test = read_validation_set()
+    if validation:
+        ext_test = read_validation_set()
 
     results = {}
 
     columns = ['normalization', 'feature_extractor', 'mil_model', 'split', 'balanced_accuracy', 'auc']
     df = pd.DataFrame(columns=columns)
-    ext_df = pd.DataFrame(columns=columns)
+    if validation:
+        ext_df = pd.DataFrame(columns=columns)
     for extractor in tqdm(extractors, desc="Outer extractor loop"):
         for normalizer in tqdm(normalizers, desc="Middle normalizer loop"):
             if normalizer.lower() == 'none':
@@ -325,6 +351,15 @@ def main():
                 split_index = 0
                 best_roc_auc = 0
                 for train, val in splits:
+                    if easy:
+                        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
+                        bag_directory = project.generate_feature_bags(feature_extractor,
+                                                                      test,
+                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_easy",
+                                                                      normalizer=normalizer,
+                                                                      normalizer_source=args.stain_norm_preset,
+                                                                      augment=args.augmentation)
+
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
 
@@ -342,40 +377,40 @@ def main():
                     df = df.append(data, ignore_index=True)
                     print(df)
 
+                    if validation:
+                        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
+                        bag_directory = project.generate_feature_bags(feature_extractor,
+                                                                      ext_test,
+                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
+                                                                      normalizer=normalizer,
+                                                                      normalizer_source=args.stain_norm_preset,
+                                                                      augment=args.augmentation)
 
-                    feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
-                    bag_directory = project.generate_feature_bags(feature_extractor,
-                                                                  ext_test,
-                                                                  outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
-                                                                  normalizer=normalizer,
-                                                                  normalizer_source=args.stain_norm_preset,
-                                                                  augment=args.augmentation)
 
+                        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
-                    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
+                        result_frame = mil.eval_mil(
+                        weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                        outcomes="label",
+                        dataset=ext_test,
+                        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
+                        config=config,
+                        outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
+                        #attention_heatmaps=True,
+                        #cmap="coolwarm"
+                        )
 
-                    result_frame = mil.eval_mil(
-                    weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-                    outcomes="label",
-                    dataset=ext_test,
-                    bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
-                    config=config,
-                    outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
-                    #attention_heatmaps=True,
-                    #cmap="coolwarm"
-                    )
-
-                    result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame, model, extractor, normalizer, ext_set=True)
-                    data = {
-                    'normalization' : normalizer,
-                    'feature_extractor' : extractor,
-                    'mil_model' : model,
-                    'split': split_index,
-                    'balanced_accuracy' : balanced_accuracy,
-                    'auc' : roc_auc
-                    }
-                    ext_df = ext_df.append(data, ignore_index=True)
-                    print(ext_df)
+                        result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame, model, extractor, normalizer, ext_set=True)
+                        data = {
+                        'normalization' : normalizer,
+                        'feature_extractor' : extractor,
+                        'mil_model' : model,
+                        'split': split_index,
+                        'balanced_accuracy' : balanced_accuracy,
+                        'auc' : roc_auc
+                        }
+                        ext_df = ext_df.append(data, ignore_index=True)
+                        print(ext_df)
 
                     split_index += 1
 
@@ -419,4 +454,4 @@ if __name__ == "__main__":
     annotations = "../../train_list_definitive.csv"
     if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
-    main()
+    main(easy=True, validataion=False)
