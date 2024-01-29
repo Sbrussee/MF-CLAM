@@ -148,7 +148,7 @@ def extract_features(extractor, normalizer, dataset, project):
                                                   augment=args.augmentation)
 
 def read_easy_set():
-    easy_df = pd.read_csv("/../../train_list_easy_only.csv")
+    easy_df = pd.read_csv("../../train_list_easy_only.csv")
     easy_df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     easy_df.replace(';;', '', inplace=True)
     print("Processed easy annotation file: ", easy_df)
