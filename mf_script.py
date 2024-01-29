@@ -157,7 +157,7 @@ def read_easy_set():
     easy_set = sf.Dataset(
     slides = '../../MF_AI_dataset_cropped',
     annotations="train_list_easy_only_slideflow.csv",
-    tfrecords=f"{args.project_directory}/tiles/easy_set}",
+    tfrecords=f"{args.project_directory}/tiles/easy_set",
     tile_px = args.tile_size,
     tile_um = args.magnification
     )
