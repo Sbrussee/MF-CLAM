@@ -151,6 +151,7 @@ def read_easy_set():
     easy_df = pd.read_csv("../../train_list_easy_only.csv")
     easy_df.replace(';;', '', inplace=True)
     easy_df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide', 'label;;' : 'label'}, inplace=True)
+    easy_df['label'] = easy_df['label'].str.replace(';;', '')
     print("Processed easy annotation file: ", easy_df)
     easy_df.to_csv("train_list_easy_only_slideflow.csv")
 
