@@ -158,6 +158,7 @@ def read_easy_set():
     easy_set = sf.Dataset(
     slides = '../../MF_AI_dataset_cropped',
     annotations="train_list_easy_only_slideflow.csv",
+    tiles=f"{args.project_directory}/tiles/easy_set",
     tfrecords=f"{args.project_directory}/tiles/easy_set",
     tile_px = args.tile_size,
     tile_um = args.magnification
@@ -322,6 +323,7 @@ def main(easy=False, validation=False):
 
     if easy:
         train = read_easy_set()
+
         train.balance(headers='label', strategy=args.training_balance)
 
         test = dataset
@@ -355,11 +357,23 @@ def main(easy=False, validation=False):
                     if easy:
                         feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
                         bag_directory = project.generate_feature_bags(feature_extractor,
+                                                                      train,
+                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_easy",
+                                                                      normalizer=normalizer,
+                                                                      normalizer_source=args.stain_norm_preset,
+                                                                      augment=args.augmentation)
+
+                        bag_directory = project.generate_feature_bags(feature_extractor,
                                                                       test,
                                                                       outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_easy",
                                                                       normalizer=normalizer,
                                                                       normalizer_source=args.stain_norm_preset,
                                                                       augment=args.augmentation)
+
+
+
+
+
 
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
