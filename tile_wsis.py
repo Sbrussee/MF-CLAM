@@ -373,7 +373,7 @@ def main():
         result_df = pd.DataFrame(columns=columns)
 
         extract_features(args.feature_extractor, args.normalization, dataset, project)
-        config = mil_config(args.model.lower(), aggregation_level=args.aggregation_level)
+        config = mil_config(args.mil_model.lower(), aggregation_level=args.aggregation_level)
         #Split using specified k-fold
         splits = train.kfold_split(
         k=args.k_fold,
@@ -383,7 +383,7 @@ def main():
         split_index = 0
         for train, val in splits:
             result_frame, balanced_accuracy, roc_auc = train_mil_model(train, val, test,
-                                                       args.model, args.feature_extractor,
+                                                       args.mil_model, args.feature_extractor,
                                                        args.normalization, project, config)
 
             print("Balanced Accuracy: ", balanced_accuracy)
@@ -395,7 +395,7 @@ def main():
             'normalization' : args.normalization,
             'feature_extractor' : args.feature_extractor,
             'ssl_model' : args.ssl_model,
-            'mil_model' : args.model,
+            'mil_model' : args.mil_model,
             'stain_norm_preset' : args.stain_norm_preset,
             }
 
