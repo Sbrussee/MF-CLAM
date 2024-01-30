@@ -269,11 +269,14 @@ def cross_validate_combination(possible_parameters, parameter_combinations, data
     result_df = pd.DataFrame(columns=list(possible_parameters.keys()) + ['split', 'balanced_accuracy', 'auc'])
 
     for comb in tqdm(parameter_combinations):
+        print(comb)
         # Initialize comb_dict with values from possible_parameters
         comb_dict = {param: possible_parameters[param][0] if len(possible_parameters[param]) == 1 else None for param in possible_parameters}
 
         # Update comb_dict with values from parameter_combinations
-        comb_dict.update({param: value for param, value in zip(comb, comb)})
+        for k, v in comb_dict.items():
+            if v == None:
+                comb_dict[k] = comb[k]
 
         print(comb_dict)
         # Extract features and other preprocessing based on comb_dict values
@@ -343,10 +346,10 @@ def main():
         multi_value_params = [param for param, values in config.items() if isinstance(values, list)]
 
         for param in possible_parameters.keys():
-            if param not in multi_value_params:
-                possible_parameters[param] = [getattr(args, param, None)]
-            else:
-                possible_parameters[param] = config[param]
+        if param not in multi_value_params:
+            possible_parameters[param] = [getattr(args, param, None)]
+        else:
+            possible_parameters[param] = config.get(param, None)
 
         print(possible_parameters)
 
