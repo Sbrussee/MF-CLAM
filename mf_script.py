@@ -342,12 +342,10 @@ def main(easy=False, validation=False):
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
     if easy:
-        train = read_easy_set()
+        train, test = read_easy_set()
         print("Easy training set: "train)
         train.balance(headers='label', strategy=args.training_balance)
-
-        test = dataset
-
+        
     #overwrite test with external validation set
     if validation:
         ext_test = read_validation_set()
