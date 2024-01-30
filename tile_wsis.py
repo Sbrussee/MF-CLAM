@@ -275,6 +275,7 @@ def cross_validate_combination(possible_parameters, parameter_combinations, data
         # Update comb_dict with values from parameter_combinations
         comb_dict.update({param: value for param, value in zip(comb, comb)})
 
+        print(comb_dict)
         # Extract features and other preprocessing based on comb_dict values
         extract_features(comb_dict.get('feature_extractor'), comb_dict.get('normalization'), dataset, project)
 
