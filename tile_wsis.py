@@ -338,7 +338,7 @@ def main():
         args.json_file = None
 
     if args.json_file != None:
-        config = json.load(args.json_file)
+        config = json.load(open(args.json_file,))
         multi_value_params = [param for param, values in config.items() if isinstance(values, list)]
 
         for param in possible_parameters.keys():
