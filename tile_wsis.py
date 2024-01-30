@@ -373,8 +373,7 @@ def main():
         result_df = pd.DataFrame(columns=columns)
 
         extract_features(args.extractor, args.normalization, dataset, project)
-        config = mil_config(args.model.lower()),
-        aggregation_level=args.aggregation_level)
+        config = mil_config(args.model.lower(), aggregation_level=args.aggregation_level)
         #Split using specified k-fold
         splits = train.kfold_split(
         k=args.k_fold,
