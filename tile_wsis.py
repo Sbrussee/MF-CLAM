@@ -3,6 +3,7 @@ from slideflow.mil import mil_config
 import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
 from sklearn.metrics import balanced_accuracy_score
+import itertools
 import pandas as pd
 import os
 import re
@@ -50,6 +51,8 @@ parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL'
 parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
                     help="MIL model to use", default="Attention MIL")
 
+parser.add_argument('-sl', '--ssl_model', choices=['SimCLR', 'DINOv2', "None"],
+                    default="None", help="Self supervised pretraining model to use for extracting features. Note that this will overwrite the feature extractor parameters.")
 #Set normalization parameters
 parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan', 'None'], default="macenko",
                     help="Normalization method to use, the parameter preset is set using --stain_norm_preset ")
@@ -194,6 +197,11 @@ def extract_features(extractor : str, normalizer : str, dataset : sf.Dataset, pr
                                                   normalizer_source=args.stain_norm_preset,
                                                   augment=args.augmentation)
 
+def calculate_combinations(parameters):
+    parameter_combinations = []
+    for r in range(1, len(parameters)):
+        parameter_combinations.extend(itertools.combinations(parameters, r))
+    return parameter_combinations
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
     project.train_mil(
@@ -256,6 +264,45 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame, balanced_accuracy, auroc
 
+
+def cross_validate_combination(config_frame, parameter_combinations,
+                               dataset, project, train, val, test):
+    result_df = pd.DataFrame(columns=list(config_frame.keys()) + ['split', 'balanced_accuracy'], 'auc'] )
+    for comb in tqdm(parameter_combinations):
+        comb_dict = {param : config_frame[param] for param in comb}
+
+        extract_features(comb_dict['extractor'], comb_dict['normalizer'], dataset, project)
+        config = mil_config(comb_dict['model'].lower()),
+        aggregation_level=args.aggregation_level)
+        #Split using specified k-fold
+        splits = train.kfold_split(
+        k=args.k_fold,
+        labels="label",
+        )
+
+        split_index = 0
+        for train, val in splits:
+            result_frame, balanced_accuracy, roc_auc = train_mil_model(train, val, test,
+                                                       comb_dict['model'], comb_dict['extractor'],
+                                                       comb_dict['normalizer'], project, config)
+
+            print("Balanced Accuracy: ", balanced_accuracy)
+            data = {}
+
+            data.update(comb_dict)
+
+            data.update({
+            'split': split_index,
+            'balanced_accuracy' : balanced_accuracy,
+            'auc' : roc_auc
+            })
+
+            result_df = result_df.append(data, ignore_index=True)
+            split_index += 1
+        print(result_df)
+
+    return result_df
+
 def main():
 
     #Create project directory
@@ -270,71 +317,99 @@ def main():
         project = sf.load_project(args.project_directory)
 
 
-    if args.json_file != None:
-        normalizers = params['normalization_methods']
-        extractors = params['feature_extractors']
-        models = params['mil_models']
-        if params['train_using_ssl']:
-            ssl_models = params['ssl_params']['ssl_models']
-
-    else:
-        normalizers = [args.normalization]
-        extractors = [args.feature_extractor]
-        models = [args.model]
-
-
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification)
     print(dataset.summary())
 
     dataset = tile_wsis(dataset)
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
+    if args.json_file == 'None':
+        args.json_file = None
 
-    results = {}
+    if args.json_file != None:
+        config = read_json("multi_input.json")
+        multi_value_params = [param for param, values in config.items() if isinstance(values, list)]
+        parameter_combinations = calculate_combinations(multi_value_params)
+        print(parameter_combinations)
+        result_df = cross_validate_combination(pd.DataFrame(config), parameter_combinations)
+        grouped_df = result_df.groupby(list(parameter_combinations.keys()))
+        final_df = grouped_df.agg({
+        'tile_size' : 'first',
+        'magnification' : 'first',
+        'augmentation' : 'first',
+        'normalization' : 'first',
+        'feature_extractor' : 'first',
+        'ssl_model' : 'first',
+        'mil_model' : 'first',
+        'stain_norm_preset' : 'first',
+        'balanced_accuracy' : ['mean', 'std'],
+        'auc' : ['mean', 'std']
+        })
 
-    columns = ['normalization', 'feature_extractor', 'mil_model', 'split', 'balanced_accuracy', 'auc']
-    df = pd.DataFrame(columns=columns)
-    for extractor in tqdm(extractors, desc="Outer extractor loop"):
-        for normalizer in tqdm(normalizers, desc="Middle normalizer loop"):
-            if normalizer.lower() == 'none':
-                normalizer = None
-            for model in tqdm(models, desc="Inner model loop"):
-                extract_features(extractor, normalizer, dataset, project)
-                #Set model configuration
-                config = mil_config(args.model.lower(),
-                aggregation_level=args.aggregation_level)
-                #Split using specified k-fold
-                splits = train.kfold_split(
-                k=args.k_fold,
-                labels="label",
-                )
-                split_index = 0
-                for train, val in splits:
-                    result_frame, balanced_accuracy, roc_auc = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
-                    #print(extractor, normalizer, model, result_frame)
-                    results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
-                    print("Balanced Accuracy: ", balanced_accuracy)
-                    data = {
-                    'normalization' : normalizer,
-                    'feature_extractor' : extractor,
-                    'mil_model' : model,
-                    'split': split_index,
-                    'balanced_accuracy' : balanced_accuracy,
-                    'auc' : roc_auc
-                    }
-                    df = df.append(data, ignore_index=True)
-                    split_index += 1
+        # Update final_df with parameter combinations
+        for param, values in parameter_combinations.items():
+            final_df[param] = values
 
-    #Summarize over splits
-    grouped_df = df.groupby(['normalization', 'feature_extractor', 'mil_model'])
+    else:
+        columns = ['tile_size', 'magnification', 'augmentation', 'normalization', 'feature_extractor',
+                    'ssl_model', 'model', 'stain_norm_preset', 'split', 'balanced_accuracy', 'auc']
 
-    result_df = grouped_df.agg({
-    'normalization' : 'first',
-    'feature_extractor' : 'first',
-    'mil_model' : 'first',
-    'balanced_accuracy' : ['mean', 'std'],
-    'auc' : ['mean', 'std']
-    })
+        result_df = pd.DataFrame(columns=columns)
+
+        extract_features(args.extractor, args.normalization, dataset, project)
+        config = mil_config(args.model.lower()),
+        aggregation_level=args.aggregation_level)
+        #Split using specified k-fold
+        splits = train.kfold_split(
+        k=args.k_fold,
+        labels="label",
+        )
+
+        split_index = 0
+        for train, val in splits:
+            result_frame, balanced_accuracy, roc_auc = train_mil_model(train, val, test,
+                                                       args.model, args.extractor,
+                                                       args.normalization, project, config)
+
+            print("Balanced Accuracy: ", balanced_accuracy)
+
+            data = {
+            'tile_size' : args.tile_size,
+            'magnification' : args.magnification,
+            'augmentation' : args.augmentation,
+            'normalization' : args.normalization,
+            'feature_extractor' : args.feature_extractor,
+            'ssl_model' : args.ssl_model,
+            'mil_model' : args.model,
+            'stain_norm_preset' : args.stain_norm_preset,
+            }
+
+            data.update({
+            'split': split_index,
+            'balanced_accuracy' : balanced_accuracy,
+            'auc' : roc_auc
+            })
+
+            result_df = result_df.append(data, ignore_index=True)
+            split_index += 1
+
+        #Summarize over splits
+        grouped_df = df.groupby(['tile_size', 'magnification', 'augmentation', 'normalization', 'feature_extractor',
+                                 'ssl_model', 'mil_model', 'stain_norm_preset'])
+
+
+        final_df = grouped_df.agg({
+        'tile_size' : 'first',
+        'magnification' : 'first',
+        'augmentation' : 'first',
+        'normalization' : 'first',
+        'feature_extractor' : 'first',
+        'ssl_model' : 'first',
+        'mil_model' : 'first',
+        'stain_norm_preset' : 'first',
+        'balanced_accuracy' : ['mean', 'std'],
+        'auc' : ['mean', 'std']
+        })
 
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
@@ -342,8 +417,6 @@ def main():
 
     with open("test_run.pkl", 'wb') as f:
         pickle.dump(results)
-
-
 
 
 if __name__ == "__main__":
