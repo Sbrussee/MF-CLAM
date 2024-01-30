@@ -409,8 +409,8 @@ def main():
             split_index += 1
 
         #Summarize over splits
-        grouped_df = df.groupby(['tile_size', 'magnification', 'augmentation', 'normalization', 'feature_extractor',
-                                 'ssl_model', 'mil_model', 'stain_norm_preset'])
+        grouped_df = result_df.groupby(['tile_size', 'magnification', 'augmentation', 'normalization', 'feature_extractor',
+                                        'ssl_model', 'mil_model', 'stain_norm_preset'])
 
 
         final_df = grouped_df.agg({
