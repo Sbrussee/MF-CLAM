@@ -325,6 +325,17 @@ def main():
                     df = df.append(data, ignore_index=True)
                     split_index += 1
 
+    #Summarize over splits
+    grouped_df = df.groupby(['normalization', 'feature_extractor', 'mil_model'])
+
+    result_df = grouped_df.agg({
+    'normalization' : 'first',
+    'feature_extractor' : 'first',
+    'mil_model' : 'first',
+    'balanced_accuracy' : ['mean', 'std'],
+    'auc' : ['mean', 'std']
+    })
+
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
     df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
