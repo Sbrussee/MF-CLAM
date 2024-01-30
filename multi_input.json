@@ -1,26 +1,23 @@
 {
-   "normalization_methods":[
+   "normalization":[
       "macenko",
-      "vahadane"
+      "reinhard"
    ],
    "normalization_presets":[
-      "v1",
-      "v2",
       "v3"
    ],
    "feature_extractors":[
-      "RetCCL",
-      "resnet50_imagenet"
+      "resnet50_imagenet",
+      "PLIP",
+      "HistoSSL"
    ],
-   "mil_models":[
-      "AttMIL",
+   "mil_model":[
       "CLAM_SB",
-      "CLAM_MB"
+      "CLAM_MB",
+      "Attention_MIL"
    ],
-   "train_using_ssl":false,
-   "ssl_params":{
-      "ssl_models":[
-         "SimCLR"
-      ]
+   "ssl_model":[
+     "None"
+   ]
    }
 }
