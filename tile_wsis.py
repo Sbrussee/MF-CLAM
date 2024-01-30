@@ -48,7 +48,7 @@ parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL'
                     help="Pretrained feature extractors to use", default="RetCCL")
 
 #Set MIL model
-parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
+parser.add_argument('-m', '--mil_model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
                     help="MIL model to use", default="Attention MIL")
 
 parser.add_argument('-sl', '--ssl_model', choices=['SimCLR', 'DINOv2', "None"],
@@ -265,46 +265,49 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     return result_frame, balanced_accuracy, auroc
 
 
-def cross_validate_combination(config_frame, parameter_combinations,
-                               dataset, project, train, val, test):
-    result_df = pd.DataFrame(columns=list(config_frame.keys()) + ['split', 'balanced_accuracy'], 'auc'] )
-    for comb in tqdm(parameter_combinations):
-        comb_dict = {param : config_frame[param] for param in comb}
+def cross_validate_combination(possible_parameters, parameter_combinations, dataset, project, train, test):
+    result_df = pd.DataFrame(columns=list(possible_parameters.keys()) + ['split', 'balanced_accuracy', 'auc'])
 
-        extract_features(comb_dict['extractor'], comb_dict['normalizer'], dataset, project)
-        config = mil_config(comb_dict['model'].lower()),
-        aggregation_level=args.aggregation_level)
-        #Split using specified k-fold
+    for comb in tqdm(parameter_combinations):
+        # Initialize comb_dict with values from possible_parameters
+        comb_dict = {param: possible_parameters[param][0] if len(possible_parameters[param]) == 1 else None for param in possible_parameters}
+
+        # Update comb_dict with values from parameter_combinations
+        comb_dict.update({param: value for param, value in zip(comb, comb)})
+
+        # Extract features and other preprocessing based on comb_dict values
+        extract_features(comb_dict.get('feature_extractor'), comb_dict.get('normalization'), dataset, project)
+
+        # Construct config based on comb_dict values
+        config = mil_config(comb_dict.get('mil_model', '').lower(), aggregation_level=args.aggregation_level)
+
+        # Split using specified k-fold
         splits = train.kfold_split(
-        k=args.k_fold,
-        labels="label",
+            k=args.k_fold,
+            labels="label",
         )
 
         split_index = 0
         for train, val in splits:
             result_frame, balanced_accuracy, roc_auc = train_mil_model(train, val, test,
-                                                       comb_dict['model'], comb_dict['extractor'],
-                                                       comb_dict['normalizer'], project, config)
+                                                                       comb_dict.get('mil_model'),
+                                                                       comb_dict.get('feature_extractor'),
+                                                                       comb_dict.get('normalization'),
+                                                                       project, config)
 
-            print("Balanced Accuracy: ", balanced_accuracy)
-            data = {}
-
-            data.update(comb_dict)
-
+            data = {param: comb_dict[param] for param in possible_parameters}
             data.update({
-            'split': split_index,
-            'balanced_accuracy' : balanced_accuracy,
-            'auc' : roc_auc
+                'split': split_index,
+                'balanced_accuracy': balanced_accuracy,
+                'auc': roc_auc
             })
 
             result_df = result_df.append(data, ignore_index=True)
             split_index += 1
-        print(result_df)
 
     return result_df
 
 def main():
-
     #Create project directory
     if not os.path.exists(args.project_directory):
         project = sf.create_project(
@@ -316,12 +319,20 @@ def main():
     else:
         project = sf.load_project(args.project_directory)
 
-
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification)
     print(dataset.summary())
 
     dataset = tile_wsis(dataset)
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
+
+    possible_parameters = {
+    'augmentation' : [],
+    'normalization' : [],
+    'feature_extractor' : [],
+    'ssl_model' : [],
+    'mil_model' : [],
+    'stain_norm_preset' : [],
+    }
 
     if args.json_file == 'None':
         args.json_file = None
@@ -329,13 +340,22 @@ def main():
     if args.json_file != None:
         config = read_json("multi_input.json")
         multi_value_params = [param for param, values in config.items() if isinstance(values, list)]
+
+        for param in possible_parameters.keys():
+            if param not in multi_value_params:
+                possible_parameters[param] = [getattr(args, param, None)]
+            else:
+                possible_parameters[param] = config[param]
+
+        print(possible_parameters)
+
         parameter_combinations = calculate_combinations(multi_value_params)
-        print(parameter_combinations)
-        result_df = cross_validate_combination(pd.DataFrame(config), parameter_combinations)
-        grouped_df = result_df.groupby(list(parameter_combinations.keys()))
+
+        result_df = cross_validate_combination(pd.DataFrame(possible_parameters), parameter_combinations,
+                                                dataset, project, train, test)
+
+        grouped_df = result_df.groupby(possible_parameters.keys())
         final_df = grouped_df.agg({
-        'tile_size' : 'first',
-        'magnification' : 'first',
         'augmentation' : 'first',
         'normalization' : 'first',
         'feature_extractor' : 'first',
@@ -346,13 +366,9 @@ def main():
         'auc' : ['mean', 'std']
         })
 
-        # Update final_df with parameter combinations
-        for param, values in parameter_combinations.items():
-            final_df[param] = values
-
     else:
-        columns = ['tile_size', 'magnification', 'augmentation', 'normalization', 'feature_extractor',
-                    'ssl_model', 'model', 'stain_norm_preset', 'split', 'balanced_accuracy', 'auc']
+        columns = ['augmentation', 'normalization', 'feature_extractor',
+                    'ssl_model', 'mil_model', 'stain_norm_preset', 'split', 'balanced_accuracy', 'auc']
 
         result_df = pd.DataFrame(columns=columns)
 
@@ -413,7 +429,7 @@ def main():
 
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
-    df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
+    final_df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
 
     with open("test_run.pkl", 'wb') as f:
         pickle.dump(results)
