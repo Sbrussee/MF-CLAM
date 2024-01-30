@@ -153,7 +153,7 @@ def tile_wsis(dataset : sf.Dataset):
     return dataset
 
 
-def split_dataset(dataset : sf.Dataset, test_fraction=0.2 : float):
+def split_dataset(dataset : sf.Dataset, test_fraction : float = 0.2):
     """
     Parameters:
         -dataset: Slideflow dataset to split
