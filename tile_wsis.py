@@ -198,10 +198,8 @@ def extract_features(extractor : str, normalizer : str, dataset : sf.Dataset, pr
                                                   augment=args.augmentation)
 
 def calculate_combinations(parameters):
-    parameter_combinations = []
-    for r in range(1, len(parameters)):
-        parameter_combinations.extend(itertools.combinations(parameters, r))
-    return parameter_combinations
+    max_length = len(parameters)
+    return list(itertools.combinations(parameters, max_length))
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
     project.train_mil(
