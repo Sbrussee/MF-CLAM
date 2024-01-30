@@ -152,6 +152,7 @@ def read_easy_set():
     easy_df.replace(';;', '', inplace=True)
     easy_df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide', 'label;;' : 'label'}, inplace=True)
     easy_df['label'] = easy_df['label'].str.replace(';;', '')
+    easy_slides = easy_df['slide'].tolist()
     print("Processed easy annotation file: ", easy_df)
     easy_df.to_csv("train_list_easy_only_slideflow.csv")
 
@@ -159,14 +160,33 @@ def read_easy_set():
     slides = '../../MF_AI_dataset_cropped',
     annotations="train_list_easy_only_slideflow.csv",
     tiles=f"{args.project_directory}/tiles/easy_set",
-    tfrecords=f"{args.project_directory}/tiles/easy_set",
+    tfrecords=f"{args.project_directory}/tfrecords/easy_set",
+    tile_px = args.tile_size,
+    tile_um = args.magnification
+    )
+
+    test_df = pd.read_csv("../../train_list_definitive_slideflow.csv")
+    #Only retain the slides not in the easy set
+    test_df = test_df[~test_df['slide'].isin(easy_slides)]
+
+    test_df.to_csv("test_list_easy_only_slideflow.csv")
+
+    test_set = sf.Dataset(
+    slides = '../../MF_AI_dataset_cropped',
+    annotations="test_list_easy_only_slideflow.csv",
+    tiles=f"{args.project_directory}/tiles/easy_test",
+    tfrecords=f"{args.project_directory}/tfrecords/easy_test",
     tile_px = args.tile_size,
     tile_um = args.magnification
     )
 
     easy_set = tile_wsis(easy_set)
 
-    return easy_set
+    test_set = tile_wsis(test_set)
+
+
+
+    return easy_set, test_set
 
 def read_validation_set():
     process_annotation_file("../../train_list_validation_easy.csv")
@@ -323,10 +343,11 @@ def main(easy=False, validation=False):
 
     if easy:
         train = read_easy_set()
-
+        print("Easy training set: "train)
         train.balance(headers='label', strategy=args.training_balance)
 
         test = dataset
+
     #overwrite test with external validation set
     if validation:
         ext_test = read_validation_set()
@@ -432,7 +453,8 @@ def main(easy=False, validation=False):
 
     #Summarize over splits
     grouped_df = df.groupby(['normalization', 'feature_extractor', 'mil_model'])
-    ext_grouped_df = ext_df.groupby(['normalization', 'feature_extractor', 'mil_model'])
+    if validation:
+        ext_grouped_df = ext_df.groupby(['normalization', 'feature_extractor', 'mil_model'])
 
     result_df = grouped_df.agg({
     'normalization' : 'first',
@@ -442,13 +464,14 @@ def main(easy=False, validation=False):
     'auc' : ['mean', 'std']
     })
 
-    ext_result_df = ext_grouped_df.agg({
-    'normalization' : 'first',
-    'feature_extractor' : 'first',
-    'mil_model' : 'first',
-    'balanced_accuracy' : ['mean', 'std'],
-    'auc' : ['mean', 'std']
-    })
+    if validation:
+        ext_result_df = ext_grouped_df.agg({
+        'normalization' : 'first',
+        'feature_extractor' : 'first',
+        'mil_model' : 'first',
+        'balanced_accuracy' : ['mean', 'std'],
+        'auc' : ['mean', 'std']
+        })
 
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
@@ -456,8 +479,9 @@ def main(easy=False, validation=False):
     df.to_csv(f"{args.project_directory}/results_{date}_full.csv", index=False)
     result_df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
 
-    ext_df.to_csv(f"{args.project_directory}/ext_set_results_{date}_full.csv", index=False)
-    ext_result_df.to_csv(f"{args.project_directory}/ext_set_results_{date}.csv", index=False)
+    if validation:
+        ext_df.to_csv(f"{args.project_directory}/ext_set_results_{date}_full.csv", index=False)
+        ext_result_df.to_csv(f"{args.project_directory}/ext_set_results_{date}.csv", index=False)
 
     with open("test_run.pkl", 'wb') as f:
         pickle.dump(results, f)
