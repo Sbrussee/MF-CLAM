@@ -346,10 +346,10 @@ def main():
         multi_value_params = [param for param, values in config.items() if isinstance(values, list)]
 
         for param in possible_parameters.keys():
-        if param not in multi_value_params:
-            possible_parameters[param] = [getattr(args, param, None)]
-        else:
-            possible_parameters[param] = config.get(param, None)
+            if param not in multi_value_params:
+                possible_parameters[param] = [getattr(args, param, None)]
+            else:
+                possible_parameters[param] = config.get(param, None)
 
         print(possible_parameters)
 
