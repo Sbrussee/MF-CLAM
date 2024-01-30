@@ -165,7 +165,7 @@ def read_easy_set():
     tile_um = args.magnification
     )
 
-    test_df = pd.read_csv("../../train_list_definitive_slideflow.csv")
+    test_df = pd.read_csv("train_list_definitive_slideflow.csv")
     #Only retain the slides not in the easy set
     test_df = test_df[~test_df['slide'].isin(easy_slides)]
 
