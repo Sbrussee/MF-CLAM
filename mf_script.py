@@ -343,9 +343,10 @@ def main(easy=False, validation=False):
 
     if easy:
         train, test = read_easy_set()
-        print("Easy training set: "train)
+        print("Easy training set: ", train)
+        print("Test set: ", test)
         train.balance(headers='label', strategy=args.training_balance)
-        
+
     #overwrite test with external validation set
     if validation:
         ext_test = read_validation_set()
