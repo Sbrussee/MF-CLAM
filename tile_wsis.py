@@ -295,14 +295,14 @@ def cross_validate_combination(possible_parameters, parameter_combinations, data
                                                                        comb_dict.get('normalization'),
                                                                        project, config)
 
-            data = {param: comb_dict[param] for param in possible_parameters}
+            data = {param: [comb_dict[param]] if param in comb else comb_dict[param] for param in possible_parameters}
             data.update({
-                'split': split_index,
-                'balanced_accuracy': balanced_accuracy,
-                'auc': roc_auc
+                'split': [split_index],
+                'balanced_accuracy': [balanced_accuracy],
+                'auc': [roc_auc]
             })
 
-            result_df = result_df.append(data, ignore_index=True)
+            result_df = result_df.append(pd.DataFrame(data), ignore_index=True)
             split_index += 1
 
     return result_df
@@ -351,7 +351,7 @@ def main():
 
         parameter_combinations = calculate_combinations(multi_value_params)
 
-        result_df = cross_validate_combination(pd.DataFrame(possible_parameters), parameter_combinations,
+        result_df = cross_validate_combination(possible_parameters, parameter_combinations,
                                                 dataset, project, train, test)
 
         grouped_df = result_df.groupby(possible_parameters.keys())
