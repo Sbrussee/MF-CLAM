@@ -198,8 +198,15 @@ def extract_features(extractor : str, normalizer : str, dataset : sf.Dataset, pr
                                                   augment=args.augmentation)
 
 def calculate_combinations(parameters):
+    param_values = list(parameters.values())
+    param_names = list(parameters.keys())
     max_length = len(parameters)
-    return list(itertools.combinations(parameters, max_length))
+
+    all_combinations = list(itertools.product(*param_values))
+
+    result_combinations = [dict(zip(param_names, combo)) for combo in all_combinations]
+
+    return result_combinations
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
     project.train_mil(
@@ -351,7 +358,7 @@ def main():
 
         print(possible_parameters)
 
-        parameter_combinations = calculate_combinations(multi_value_params)
+        parameter_combinations = calculate_combinations(possible_parameters)
 
         result_df = cross_validate_combination(possible_parameters, parameter_combinations,
                                                 dataset, project, train, test)
