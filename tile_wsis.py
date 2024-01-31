@@ -363,7 +363,7 @@ def main():
         result_df = cross_validate_combination(possible_parameters, parameter_combinations,
                                                 dataset, project, train, test)
 
-        grouped_df = result_df.groupby(possible_parameters.keys())
+        grouped_df = result_df.groupby(list(possible_parameters.keys()))
         final_df = grouped_df.agg({
         'augmentation' : 'first',
         'normalization' : 'first',
