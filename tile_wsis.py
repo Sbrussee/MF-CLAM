@@ -3,6 +3,7 @@ from slideflow.mil import mil_config
 import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
 from sklearn.metrics import balanced_accuracy_score
+from slideflow import simclr
 import itertools
 import pandas as pd
 import os
@@ -272,7 +273,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 def train_ssl_and_extract_features(ssl_model_name, normalizer, project, train, dataset):
     train, val = train.split(val_fraction=0.2, model_type='categorical', labels='label')
     if ssl_model_name.lower() == 'simclr':
-        args = sf.simclr.get_args(
+        args = simclr.get_args(
         image_size=args.tile_size
         )
         project.train_simclr(
