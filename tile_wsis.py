@@ -269,6 +269,36 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame, balanced_accuracy, auroc
 
+def train_ssl_and_extract_features(ssl_model_name, normalizer, project, train, dataset):
+    train, val = train.split(val_fraction=0.2, model_type='categorical', labels='label')
+    if ssl_model_name.lower() == 'simclr':
+        args = sf.simclr.get_args(
+        image_size=args.tile_size
+        )
+        project.train_simclr(
+        args,
+        train_dataset=train,
+        val_dataset=val
+        )
+
+        simclr = sf.model.build_feature_extractor(
+        'simclr',
+        tile_px=args.tile_size,
+        ckpt=f"{args.project_directory}/simclr/simclr.ckpt",
+        )
+
+        bag_directory = project.generate_feature_bags(simclr,
+                                                      dataset,
+                                                      outdir=f"{args.project_directory}/bags/{ssl_model_name}_{normalizer.lower()}",
+                                                      normalizer=normalizer,
+                                                      normalizer_source=args.stain_norm_preset,
+                                                      augment=args.augmentation)
+
+    elif sll_model_name.lower() == 'dinov2':
+        pass
+
+
+
 
 def cross_validate_combination(possible_parameters, parameter_combinations, dataset, project, train, test):
     result_df = pd.DataFrame(columns=list(possible_parameters.keys()) + ['split', 'balanced_accuracy', 'auc'])
@@ -284,8 +314,13 @@ def cross_validate_combination(possible_parameters, parameter_combinations, data
                 comb_dict[k] = comb[k]
 
         print(comb_dict)
-        # Extract features and other preprocessing based on comb_dict values
-        extract_features(comb_dict.get('feature_extractor'), comb_dict.get('normalization'), dataset, project)
+
+        if comb_dict.get('ssl_model') != 'None':
+            train_ssl_and_extract_features(comb_dict.get('ssl_model'), comb_dict.get('normalization'),
+                                           project, train, dataset)
+        else:
+            # Extract features and other preprocessing based on comb_dict values
+            extract_features(comb_dict.get('feature_extractor'), comb_dict.get('normalization'), dataset, project)
 
         # Construct config based on comb_dict values
         config = mil_config(comb_dict.get('mil_model', '').lower(), aggregation_level=args.aggregation_level)
@@ -438,9 +473,6 @@ def main():
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
     final_df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
-
-    with open("test_run.pkl", 'wb') as f:
-        pickle.dump(results)
 
 
 if __name__ == "__main__":
