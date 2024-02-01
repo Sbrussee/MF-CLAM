@@ -323,11 +323,9 @@ def main(easy=False, validation=False):
 
 
     if args.json_file != None:
-        normalizers = params['normalization_methods']
-        extractors = params['feature_extractors']
-        models = params['mil_models']
-        if params['train_using_ssl']:
-            ssl_models = params['ssl_params']['ssl_models']
+        normalizers = params['normalization']
+        extractors = params['feature_extractor']
+        models = params['mil_model']
 
     else:
         normalizers = [args.normalization]
