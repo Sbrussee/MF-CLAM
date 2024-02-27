@@ -1,4 +1,5 @@
-import http.client
+import urllib
+urllib.request.http.client
 import slideflow as sf
 from slideflow.mil import mil_config
 import slideflow.mil as mil
