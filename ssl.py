@@ -195,7 +195,7 @@ def train_dino(path_to_images, backbone, input_dim):
 
     transform = DINOTransform()
 
-    dataloader = (
+    dataloader = torch.utils.data,DataLoader(
     LightlyDataset(path_to_images, transform=transform),
     batch_size=32,
     shuffle=True,
