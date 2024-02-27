@@ -3,7 +3,11 @@ from slideflow.mil import mil_config
 import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
 from sklearn.metrics import balanced_accuracy_score
-from slideflow import simclr
+from slideflow.model.extractors._factory_torch import TorchFeatureExtractor
+from ssl import MAE, BarlowTwins, DINO, SimCLR
+from slideflow.model.extractors import register_torch
+from torchvision import transforms
+
 import itertools
 import pandas as pd
 import os
@@ -16,6 +20,8 @@ import pickle
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+
+from ssl import train_ssl_model
 
 parser = argparse.ArgumentParser()
 #Global arguments
@@ -45,14 +51,14 @@ parser.add_argument('-b', '--training_balance', choices=['tile', 'slide', 'patie
                     category makes sure the categorical outcome labeled are sampled with equal probability")
 
 #Set feature extractor
-parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL', 'HistoSSL', 'PLIP', 'SimCLR', 'DinoV2', 'resnet50_imagenet'],
+parser.add_argument('-f', '--feature_extractor', choices=['CTransPath', 'RetCCL', 'HistoSSL', 'PLIP', 'resnet50_imagenet'],
                     help="Pretrained feature extractors to use", default="RetCCL")
 
 #Set MIL model
 parser.add_argument('-m', '--mil_model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_MB', 'MIL_fc', 'MIL_fc_mc', 'TransMIL'],
                     help="MIL model to use", default="Attention MIL")
 
-parser.add_argument('-sl', '--ssl_model', choices=['SimCLR', 'DINOv2', "None"],
+parser.add_argument('-sl', '--ssl_model', choices=["SimCLR", "DINO", "MAE", "BarlowTwins", "None"],
                     default="None", help="Self supervised pretraining model to use for extracting features. Note that this will overwrite the feature extractor parameters.")
 #Set normalization parameters
 parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan', 'None'], default="macenko",
@@ -87,6 +93,159 @@ if args.json_file != None:
     #Load parameters from JSON file
     with open(args.json_file, "r") as params_file:
         params = json.load(params_file)
+
+
+@register_torch
+class SimCLRExtractor(TorchFeatureExtractor):
+    tag = "simclr"
+    def __init__(self, pretrained_model, backbone_type):
+        super().__init__()
+
+        self.model = pretrained_model
+        self.model.to(device)
+        self.model.eval()
+
+        if backbone_type == 'resnet18':
+            self.num_features = 512
+        elif backbone_type == 'vit32':
+            self.num_features = 512
+        elif backbone_type == 'vit16':
+            backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
+            self.num_features = backbone.embed_dim
+
+        # Image preprocessing.
+        self.transform = transforms.Compose([
+            transforms.Resize(args.tile_size),
+            transforms.Lambda(lambda x: x / 255.),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+        self.preprocess_kwargs = {'standardize': False}
+
+
+
+    def dump_config(self):
+        return {
+            'class': tag,
+            'kwargs': {}
+        }
+
+
+
+@register_torch
+class DINOExtractor(TorchFeatureExtractor):
+    tag = "dino"
+    def __init__(self, pretrained_model, backbone_type):
+        super().__init__()
+
+        self.model = pretrained_model
+        self.model.to(device)
+        self.model.eval()
+
+        if backbone_type == 'resnet18':
+            self.num_features = 512
+        elif backbone_type == 'vit32':
+            self.num_features = 512
+        elif backbone_type == 'vit16':
+            backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
+            self.num_features = backbone.embed_dim
+
+        # Image preprocessing.
+        self.transform = transforms.Compose([
+            transforms.Resize(args.tile_size),
+            transforms.Lambda(lambda x: x / 255.),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+        self.preprocess_kwargs = {'standardize': False}
+
+
+
+    def dump_config(self):
+        return {
+            'class': tag,
+            'kwargs': {}
+        }
+
+
+@register_torch
+class BarlowTwinsExtractor(TorchFeatureExtractor):
+    tag = "barlowtwins"
+    def __init__(self, pretrained_model, backbone_type):
+        super().__init__()
+
+        self.model = pretrained_model
+        self.model.to(device)
+        self.model.eval()
+
+        if backbone_type == 'resnet18':
+            self.num_features = 512
+        elif backbone_type == 'vit32':
+            self.num_features = 512
+        elif backbone_type == 'vit16':
+            backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
+            self.num_features = backbone.embed_dim
+
+        # Image preprocessing.
+        self.transform = transforms.Compose([
+            transforms.Resize(args.tile_size),
+            transforms.Lambda(lambda x: x / 255.),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+        self.preprocess_kwargs = {'standardize': False}
+
+
+
+    def dump_config(self):
+        return {
+            'class': tag,
+            'kwargs': {}
+        }
+
+
+@register_torch
+class MAEFeatureExtractor(TorchFeatureExtractor):
+    tag = "mae"
+    def __init__(self, pretrained_model, backbone_type):
+        super().__init__()
+
+        self.model = pretrained_model
+        self.model.to(device)
+        self.model.eval()
+
+        if backbone_type == 'resnet18':
+            self.num_features = 512
+        elif backbone_type == 'vit32':
+            self.num_features = 512
+        elif backbone_type == 'vit16':
+            backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
+            self.num_features = backbone.embed_dim
+
+        # Image preprocessing.
+        self.transform = transforms.Compose([
+            transforms.Resize(args.tile_size),
+            transforms.Lambda(lambda x: x / 255.),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+        self.preprocess_kwargs = {'standardize': False}
+
+
+
+    def dump_config(self):
+        return {
+            'class': tag,
+            'kwargs': {}
+        }
 
 def process_annotation_file(original_path : str):
     """
@@ -137,6 +296,42 @@ def get_highest_numbered_filename(directory_path : str):
             pass  # Ignore non-numeric parts
 
     return highest_number_part
+
+"""
+import torch.nn as nn
+
+class Aggregator(nn.Module):
+    def __init__(self, input_features_size: int = 2048):
+        super(Aggregator, self).__init__()
+        self.projector = nn.Linear(in_features=input_features_size, out_features=16)
+        self.selu = torch.nn.SELU()
+        self.dropout_projector = torch.nn.Dropout(0.5)
+        self.weighing_layer = nn.Linear(in_features=16, out_features=1, bias=False)
+        self.classifier = nn.Linear(in_features=16, out_features=3)
+        self.dropout_classifier = torch.nn.Dropout(0.5)
+        self.init_weights()
+
+    def forward(self, h):
+        h = self.selu(self.projector(self.dropout_projector(h)))
+        weights = torch.relu(self.weighing_layer(h))
+        weights = weights / (weights.sum() + 1e-8)
+        weighted_sum = torch.mm(weights.T, h)
+        logits = self.classifier(self.dropout_classifier(weighted_sum))
+        return logits, weights
+
+    def init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+
+
+def linear_probe_model(image_shape, **kwargs):
+    model = Aggregator(image_shape)
+    return model
+"""
 
 def tile_wsis(dataset : sf.Dataset):
     """
@@ -270,35 +465,22 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
     return result_frame, balanced_accuracy, auroc
 
-def train_ssl_and_extract_features(ssl_model_name, normalizer, project, train, dataset):
-    train, val = train.split(val_fraction=0.2, model_type='categorical', labels='label')
-    if ssl_model_name.lower() == 'simclr':
-        args = simclr.get_args(
-        image_size=args.tile_size
-        )
-        project.train_simclr(
-        args,
-        train_dataset=train,
-        val_dataset=val
-        )
+def train_ssl(ssl_model_name, backbone, path_to_images):
+    # Check if trained_ssl_models directory exists, if not, create it
+    if not os.path.exists("trained_ssl_models"):
+        os.makedirs("trained_ssl_models")
 
-        simclr = sf.model.build_feature_extractor(
-        'simclr',
-        tile_px=args.tile_size,
-        ckpt=f"{args.project_directory}/simclr/simclr.ckpt",
-        )
-
-        bag_directory = project.generate_feature_bags(simclr,
-                                                      dataset,
-                                                      outdir=f"{args.project_directory}/bags/{ssl_model_name}_{normalizer.lower()}",
-                                                      normalizer=normalizer,
-                                                      normalizer_source=args.stain_norm_preset,
-                                                      augment=args.augmentation)
-
-    elif sll_model_name.lower() == 'dinov2':
-        pass
-
-
+    # Check if the ssl_model_name already exists in trained_ssl_models directory
+    if os.path.exists(os.path.join("trained_ssl_models", ssl_model_name)):
+        print("Found pre-trained model. Loading weights...")
+        # Load the pre-trained model
+        backbone_state_dict = torch.load(os.path.join("trained_ssl_models", ssl_model_name))
+        # Load the state dictionary into the backbone
+        backbone.load_state_dict(backbone_state_dict)
+    else:
+        print("Pre-trained model not found. Training...")
+        # Train the SSL model
+        train_ssl_model(ssl_model_name, backbone, path_to_images, os.path.join("trained_ssl_models", ssl_model_name))
 
 
 def cross_validate_combination(possible_parameters, parameter_combinations, dataset, project, train, test):
@@ -417,6 +599,18 @@ def main():
 
         result_df = pd.DataFrame(columns=columns)
 
+        if args.ssl_model != "None":
+            #If SSL model should be used
+            if args.ssl_model == 'DINO' or args.ssl_model == 'MAE':
+                backbone = 'vit16'
+            else:
+                backbone = 'resnet18'
+
+            #Train SSL model on image tiles
+            train_ssl_model(args.ssl_model, backbone, f"{args.tile_size}px_{args.magnification}")
+            #Extract features using the trained SSL model
+            args.feature_extractor = args.ssl_model
+
         extract_features(args.feature_extractor, args.normalization, dataset, project)
         config = mil_config(args.mil_model.lower(), aggregation_level=args.aggregation_level)
         #Split using specified k-fold
@@ -474,6 +668,7 @@ def main():
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
     final_df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
+
 
 
 if __name__ == "__main__":
