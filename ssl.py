@@ -1,4 +1,4 @@
-from simclr import SimCLR
+
 import torchvision
 import torch
 from torch import nn
