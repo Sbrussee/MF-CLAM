@@ -197,7 +197,7 @@ def train_dino(path_to_images, backbone, input_dim):
 
     dataloader = (
     LightlyDataset(path_to_images, transform=transform),
-    batch_size = 32,
+    batch_size=32,
     shuffle=True,
     drop_last=True,
     num_workers=8
