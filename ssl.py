@@ -196,7 +196,7 @@ def train_dino(path_to_images, backbone, input_dim):
     transform = DINOTransform()
 
     dataloader = (
-    LightlyDataset(path_to_images, transform=transform)
+    LightlyDataset(path_to_images, transform=transform),
     batch_size = 32,
     shuffle=True,
     drop_last=True,
