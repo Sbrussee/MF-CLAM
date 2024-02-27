@@ -122,7 +122,7 @@ class MAE(nn.module):
 
 
 
-def train_ssl_model(method='BarlowTwins', backbone_model='resnet18', path_to_images, ssl_model_name):
+def train_ssl_model(method, backbone_model, path_to_images, ssl_model_name):
     if backbone_model == 'resnet18':
         resnet  = torchvision.models.resnet18()
         backbone = nn.Sequential(*list(resnet.children())[L-1])
