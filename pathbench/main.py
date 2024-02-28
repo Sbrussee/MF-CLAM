@@ -382,14 +382,17 @@ def split_dataset(dataset : sf.Dataset, test_fraction : float = 0.2):
     return train, test
 
 
-def extract_features(extractor : str, normalizer : str, dataset : sf.Dataset, project: sf.Project):
+def extract_features(extractor : str, normalizer : str, dataset : sf.Dataset, project: sf.Project, pretrained_weights=None):
     """
     Extractor:
 
 
 
     """
-    feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
+    if pretrained_weights == None:
+        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
+    else:
+        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size, weights=pretrained_weights)
     bag_directory = project.generate_feature_bags(feature_extractor,
                                                   dataset,
                                                   outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
@@ -611,11 +614,13 @@ def main():
                 backbone = 'resnet18'
 
             #Train SSL model on image tiles
-            train_ssl_model(args.ssl_model, backbone, f"{args.tile_size}px_{args.magnification}")
+            train_ssl_model(args.ssl_model, backbone, f"{args.tile_size}px_{args.magnification}", args.ssl_model+"_weights.pt")
             #Extract features using the trained SSL model
             args.feature_extractor = args.ssl_model
 
-        extract_features(args.feature_extractor, args.normalization, dataset, project)
+            extract_features(args.feature_extractor, args.normalization, dataset, project, pretrained_weights=args.ssl_model+"_weights.pt")
+        else:
+            extract_features(args.feature_extractor, args.normalization, dataset, project)
         config = mil_config(args.mil_model.lower(), aggregation_level=args.aggregation_level)
         #Split using specified k-fold
         splits = train.kfold_split(
@@ -679,4 +684,6 @@ if __name__ == "__main__":
     annotations = "../../../train_list_definitive.csv"
     if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
+
+    if not os.path.exists(args.project_directory)
     main()
