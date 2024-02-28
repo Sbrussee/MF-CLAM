@@ -1,5 +1,4 @@
-import urllib.request
-urllib.request.http.client
+
 import torch
 import slideflow as sf
 from slideflow.mil import mil_config
