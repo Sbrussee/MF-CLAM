@@ -7,7 +7,7 @@ from lightly.models.modules import (BarlowTwinsProjectionHead,
 from lightly.models.utils import deactivate_requires_grad, update_momentum
 from lightly.transforms.dino_transform import DINOTransform
 from lightly.transforms.simclr_transform import SimCLRTransform
-from lightly.transform.mae_transform import MAETransform
+from lightly.transforms.mae_transform import MAETransform
 from lightly.utils.scheduler import cosine_schedule
 from lightly.models import utils
 from lightly.data.dataset import LightlyDataset
