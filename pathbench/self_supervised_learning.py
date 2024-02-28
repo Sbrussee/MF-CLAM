@@ -122,7 +122,7 @@ class MAE(nn.Module):
 def train_ssl_model(method, backbone_model, path_to_images, ssl_model_name):
     if backbone_model == 'resnet18':
         resnet  = models.resnet18()
-        backbone = nn.Sequential(*list(resnet.children())[L-1])
+        backbone = nn.Sequential(*list(resnet.children())[:-1])
         input_dim = 512
 
     elif backbone_model == 'vit16':
