@@ -15,6 +15,7 @@ from lightly.transforms.mmcr_transform import MMCRTransform
 from lightly.transforms.multi_view_transform import MultiViewTransform
 
 from torch import nn
+import torch
 from torchvision import models
 import copy
 
