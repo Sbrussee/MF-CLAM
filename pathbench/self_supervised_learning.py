@@ -11,12 +11,8 @@ from lightly.transforms.mae_transform import MAETransform
 from lightly.utils.scheduler import cosine_schedule
 from lightly.models import utils
 from lightly.data.dataset import LightlyDataset
-from lightly.transforms.byol_transfrom import (
-    BYOLTransform,
-    BYOLView1Transform,
-    BYOLView2Transform,
-    DINOTransform
-)
+from lightly.transforms.mmcr_transform import MMCRTransform
+from lightly.transforms.multi_view_transform import MultiViewTransform
 
 from torch import nn
 from torchvision import models
@@ -153,11 +149,7 @@ def train_barlow_twins(path_to_images, backbone, ssl_model_name):
     model = BarlowTwins(backbone)
     model.to(device)
 
-    transform = BYOLTransform(
-    view1 = BYOLView1Transform(input_size=32),
-    view2 = BYOLView2Transform(input_size=32),
-    )
-
+    transform = SimCLRTransform()
     dataloader = torch.utils.data.DataLoader(
     LightlyDataset(path_to_images, transform=transform),
     batch_size=256,
