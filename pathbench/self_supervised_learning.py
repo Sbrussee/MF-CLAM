@@ -1,8 +1,4 @@
 
-from torch import nn
-from torchvision import models
-import copy
-
 from lightly.loss import BarlowTwinsLoss, DINOLoss, NTXentLoss
 from lightly.models.modules import (BarlowTwinsProjectionHead,
                                     DINOProjectionHead,
@@ -21,6 +17,11 @@ from lightly.transforms.byol_transfrom import (
     BYOLView2Transform,
     DINOTransform
 )
+
+from torch import nn
+from torchvision import models
+import copy
+
 
 device = 'cuda' if torch.cuda_is_available() else 'cpu'
 

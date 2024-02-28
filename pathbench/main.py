@@ -25,7 +25,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ssl import train_ssl_model
+from self_supervised_learning import train_ssl_model
 
 parser = argparse.ArgumentParser()
 #Global arguments
