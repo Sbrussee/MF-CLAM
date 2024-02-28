@@ -20,7 +20,7 @@ from torchvision import models
 import copy
 
 
-device = 'cuda' if torch.cuda_is_available() else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class BarlowTwins(nn.Module):
     def __init__(self, backbone):
