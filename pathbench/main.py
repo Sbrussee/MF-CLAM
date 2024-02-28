@@ -614,7 +614,7 @@ def main():
                 backbone = 'resnet18'
 
             #Train SSL model on image tiles
-            train_ssl_model(args.ssl_model, backbone, f"{args.tile_size}px_{args.magnification}", args.ssl_model+"_weights.pt")
+            train_ssl_model(args.ssl_model, backbone, f"{args.project_directory}/tiles/{args.tile_size}px_{args.magnification}", args.ssl_model+"_weights.pt")
             #Extract features using the trained SSL model
             args.feature_extractor = args.ssl_model
 
