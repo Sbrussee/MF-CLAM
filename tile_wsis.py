@@ -1,3 +1,5 @@
+import urllib.request
+urllib.request.http.client
 
 import torch
 import slideflow as sf
@@ -6,7 +8,6 @@ import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
 from sklearn.metrics import balanced_accuracy_score
 from slideflow.model.extractors._factory_torch import TorchFeatureExtractor
-from ssl import MAE, BarlowTwins, DINO, SimCLR
 from slideflow.model.extractors import register_torch
 from torchvision import transforms
 
