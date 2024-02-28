@@ -1,7 +1,6 @@
 
-import torchvision
-import torch
 from torch import nn
+from torchvision import models
 import copy
 
 from lightly.loss import BarlowTwinsLoss, DINOLoss, NTXentLoss
@@ -124,7 +123,7 @@ class MAE(nn.module):
 
 def train_ssl_model(method, backbone_model, path_to_images, ssl_model_name):
     if backbone_model == 'resnet18':
-        resnet  = torchvision.models.resnet18()
+        resnet  = models.resnet18()
         backbone = nn.Sequential(*list(resnet.children())[L-1])
         input_dim = 512
 
@@ -133,7 +132,7 @@ def train_ssl_model(method, backbone_model, path_to_images, ssl_model_name):
         input_dim = backbone.embed_dim
 
     elif backbone_model == 'vit32':
-        backbone = torchvision.models.vit_b_32(pretrained=False)
+        backbone = models.vit_b_32(pretrained=False)
         input_dim = 512
 
     if method == 'BarlowTwins':
