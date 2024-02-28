@@ -182,7 +182,7 @@ def train_barlow_twins(path_to_images, backbone, ssl_model_name):
     torch.save(pretrained_backbone.state_dict(), ssl_model_name)
 
 
-def train_dino(path_to_images, backbone, input_dim):
+def train_dino(path_to_images, backbone, input_dim, ssl_model_name):
     model = DINO(backbone, input_dim)
     model.to(device)
 
@@ -231,7 +231,7 @@ def train_dino(path_to_images, backbone, input_dim):
     pretrained_backbone = model.backbone
     torch.save(pretrained_backbone.state_dict(), ssl_model_name)
 
-def train_simclr(path_to_images, backbone):
+def train_simclr(path_to_images, backbone, ssl_model_name):
     model = SimCLR(backbone)
     model.to(device)
 
@@ -267,7 +267,7 @@ def train_simclr(path_to_images, backbone):
     pretrained_backbone = model.backbone
     torch.save(pretrained_backbone.state_dict(), ssl_model_name)
 
-def train_mae(path_to_images, backbone):
+def train_mae(path_to_images, backbone, ssl_model_name):
     model = MAE(backbone)
     model.to(device)
     transform = MAETransform()
