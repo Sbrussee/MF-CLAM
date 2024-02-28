@@ -66,7 +66,7 @@ class SimCLR(nn.Module):
         z = self.projection_head(x)
         return z
 
-class MAE(nn.module):
+class MAE(nn.Module):
     def __init__(self, vit):
         super().__init__()
 
