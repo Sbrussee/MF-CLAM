@@ -685,5 +685,4 @@ if __name__ == "__main__":
     if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
 
-    if not os.path.exists(args.project_directory)
     main()
