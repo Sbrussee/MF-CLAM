@@ -189,11 +189,11 @@ def read_easy_set():
     return easy_set, test_set
 
 def read_validation_set():
-    process_annotation_file("../../train_list_validation_easy.csv")
+    #process_annotation_file("../../Thom_Doeleman/annotations.csv")
 
     test_set = sf.Dataset(
-    slides="../../ValidationSetJune2023tiffonly",
-    annotations="train_list_validation_easy_slideflow.csv",
+    slides="../../Thom_Doeleman/CLAM_validate_cropped",
+    annotations="../../Thom_Doeleman/annotations.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
     tile_px=args.tile_size,
@@ -487,7 +487,7 @@ def main(easy=False, validation=False):
 
 
 if __name__ == "__main__":
-    annotations = "../../train_list_definitive.csv"
-    if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
-        process_annotation_file(annotations)
-    main(easy=True, validation=False)
+    annotations = "../../Thom_Doeleman/annotations.csv"
+    #if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
+    #    process_annotation_file(annotations)
+    main(easy=False, validation=True)
