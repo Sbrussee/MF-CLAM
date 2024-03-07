@@ -193,6 +193,7 @@ def read_validation_set():
 
     test_set = sf.Dataset(
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
+    filters = {'category' : ['validation']}
     annotations="../../Thom_Doeleman/annotations.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
@@ -333,7 +334,8 @@ def main(easy=False, validation=False):
         models = [args.model]
 
 
-    dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification)
+    dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification,
+    filters={"category" : ['train']})
     print(dataset.summary())
 
     dataset = tile_wsis(dataset)
