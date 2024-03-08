@@ -86,7 +86,7 @@ def process_annotation_file(original_path):
     df = pd.read_csv(original_path, header=0, sep=";")
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     df['slide'] = df['slide'].apply(lambda x:x + '.tiff')
-    df.drop_duplicates(inplace=True)
+    df.drop_duplicates(inplace=True, subset="slide")
     print("Processed annotation file: ", df)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False,sep=",")
 
