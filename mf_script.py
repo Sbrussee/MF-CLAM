@@ -137,7 +137,7 @@ def split_dataset(dataset, test_fraction=0.2):
     val_fraction=test_fraction
     )
 
-    train = train.balance(headers='label', strategy=args.training_balance)
+    train = train.balance(headers='category', strategy=args.training_balance)
 
     return train, test
 
@@ -197,7 +197,7 @@ def read_validation_set():
 
     test_set = sf.Dataset(
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
-    filters = {'dataset' : ['validate']},
+    filters = {'dataset' : 'validate'},
     annotations="annotations_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
@@ -339,10 +339,12 @@ def main(easy=False, validation=False):
 
 
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification,
-    filters={"dataset" : ['train']})
+    filters={"dataset" : 'train'})
     print(dataset.summary())
 
+    print("Tiling...")
     dataset = tile_wsis(dataset)
+    print("Splitting...")
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
     if easy:
