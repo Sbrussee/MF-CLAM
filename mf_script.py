@@ -338,8 +338,8 @@ def main(easy=False, validation=False):
         models = [args.model]
 
 
-    dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification,
-    filters={"dataset" : 'train'})
+    dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification, filters={"dataset" : 'train'})
+    print(dataset)
     print(dataset.summary())
 
     print("Tiling...")
