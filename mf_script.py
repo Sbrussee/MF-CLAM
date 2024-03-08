@@ -132,8 +132,7 @@ def split_dataset(dataset, test_fraction=0.2):
     model_type="categorical",
     val_strategy='fixed',
     labels="category",
-    val_fraction=test_fraction,
-    outcome_key='category'
+    val_fraction=test_fraction
     )
 
     train = train.balance(headers='label', strategy=args.training_balance)
