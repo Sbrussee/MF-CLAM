@@ -87,7 +87,7 @@ def process_annotation_file(original_path):
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     print("Processed annotation file: ", df)
     df['slide'][1:] = df['slide'][1:].apply(lambda x:x + '.tiff')
-    df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False¸sep=",")
+    df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False,sep=",")
 
 def get_highest_numbered_filename(directory_path):
     # List all files in the directory
