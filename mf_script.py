@@ -86,7 +86,8 @@ def process_annotation_file(original_path):
     df = pd.read_csv(original_path)
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     print("Processed annotation file: ", df)
-    df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)
+    df['slide'] = df['slide'].apply(lambda x:x + '.tiff')
+    df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False)¸sep=",")
 
 def get_highest_numbered_filename(directory_path):
     # List all files in the directory
@@ -194,7 +195,7 @@ def read_validation_set():
     test_set = sf.Dataset(
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
     filters = {'category' : ['validate']},
-    annotations="../../Thom_Doeleman/annotations.csv",
+    annotations="annotations_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
     tile_px=args.tile_size,
