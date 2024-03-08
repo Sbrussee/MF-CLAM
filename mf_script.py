@@ -118,17 +118,6 @@ def get_highest_numbered_filename(directory_path):
     print(highest_number_part)
     return highest_number_part
 
-def tile_wsis(dataset):
-    dataset.extract_tiles(
-    qc='both', #Both use Otsu Thresholding and Blur detection
-    save_tiles=True,
-    img_format='png',
-    enable_downsample=False
-    )
-
-    return dataset
-
-
 def split_dataset(dataset, test_fraction=0.2):
     train, test = dataset.split(
     model_type="categorical",
@@ -338,12 +327,17 @@ def main(easy=False, validation=False):
         models = [args.model]
 
 
+    print(args.tile_size, args.magnification)
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification, filters={'dataset' : 'train'})
     print(dataset)
-    print(dataset.summary())
 
     print("Tiling...")
-    dataset = tile_wsis(dataset)
+    dataset.extract_tiles(
+        qc='both', #Both use Otsu Thresholding and Blur detection
+        save_tiles=True,
+        img_format='png',
+        enable_downsample=False
+        )
     print("Splitting...")
     train, test = split_dataset(dataset, test_fraction=args.test_fraction)
 
