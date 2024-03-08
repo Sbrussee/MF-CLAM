@@ -193,7 +193,7 @@ def read_validation_set():
 
     test_set = sf.Dataset(
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
-    filters = {'category' : ['validate']}
+    filters = {'category' : ['validate']},
     annotations="../../Thom_Doeleman/annotations.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
