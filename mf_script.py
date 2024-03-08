@@ -490,6 +490,6 @@ def main(easy=False, validation=False):
 
 if __name__ == "__main__":
     annotations = "../../Thom_Doeleman/annotations.csv"
-    #if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
-    #    process_annotation_file(annotations)
+    if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
+        process_annotation_file(annotations)
     main(easy=False, validation=True)
