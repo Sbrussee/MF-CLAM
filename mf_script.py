@@ -83,7 +83,7 @@ if args.json_file != None:
         params = json.load(params_file)
 
 def process_annotation_file(original_path):
-    df = pd.read_csv(original_path)
+    df = pd.read_csv(original_path, header=0)
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     print("Processed annotation file: ", df)
     df['slide'][1:] = df['slide'][1:].apply(lambda x:x + '.tiff')
