@@ -85,7 +85,7 @@ if args.json_file != None:
 def process_annotation_file(original_path):
     df = pd.read_csv(original_path, header=0, sep=";")
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
-    df['slide'][1:] = df['slide'][1:].apply(lambda x:x + '.tiff')
+    df['slide'] = df['slide'].apply(lambda x:x + '.tiff')
     print("Processed annotation file: ", df)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False,sep=",")
 
@@ -129,7 +129,7 @@ def tile_wsis(dataset):
 def split_dataset(dataset, test_fraction=0.2):
     train, test = dataset.split(
     model_type="categorical",
-    labels="label",
+    labels="category",
     val_strategy='fixed',
     val_fraction=test_fraction
     )
@@ -194,7 +194,7 @@ def read_validation_set():
 
     test_set = sf.Dataset(
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
-    filters = {'category' : ['validate']},
+    filters = {'dataset' : ['validate']},
     annotations="annotations_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
@@ -212,7 +212,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     if args.aggregation_level == 'patient':
         project.train_mil(
         config=config,
-        outcomes="label",
+        outcomes="category",
         train_dataset=train,
         val_dataset=val,
         bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
@@ -225,7 +225,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
         result_frame = mil.eval_mil(
         weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-        outcomes="label",
+        outcomes="category",
         dataset=test,
         bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
         config=config,
@@ -237,7 +237,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     elif args.aggregation_level == 'slide':
         project.train_mil(
         config=config,
-        outcomes="label",
+        outcomes="category",
         train_dataset=train,
         val_dataset=val,
         bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
@@ -250,7 +250,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
         result_frame = mil.eval_mil(
         weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-        outcomes="label",
+        outcomes="category",
         dataset=test,
         bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
         config=config,
@@ -336,7 +336,7 @@ def main(easy=False, validation=False):
 
 
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification,
-    filters={"category" : ['train']})
+    filters={"dataset" : ['train']})
     print(dataset.summary())
 
     dataset = tile_wsis(dataset)
@@ -346,7 +346,7 @@ def main(easy=False, validation=False):
         train, test = read_easy_set()
         print("Easy training set: ", train)
         print("Test set: ", test)
-        train.balance(headers='label', strategy=args.training_balance)
+        train.balance(headers='category', strategy=args.training_balance)
 
     #overwrite test with external validation set
     if validation:
@@ -370,7 +370,7 @@ def main(easy=False, validation=False):
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
-                labels="label",
+                labels="category",
                 )
                 split_index = 0
                 best_roc_auc = 0
@@ -427,7 +427,7 @@ def main(easy=False, validation=False):
 
                         result_frame = mil.eval_mil(
                         weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-                        outcomes="label",
+                        outcomes="category",
                         dataset=ext_test,
                         bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
                         config=config,
