@@ -430,7 +430,7 @@ def main(easy=False, validation=False):
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
 
                         result_frame = mil.eval_mil(
-                        weights=f"{args.project_directory}mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                        weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
                         outcomes="category",
                         dataset=ext_test,
                         bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
