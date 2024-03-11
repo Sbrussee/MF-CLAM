@@ -187,7 +187,7 @@ def read_validation_set():
     test_set = sf.Dataset(
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
     filters = {'dataset' : 'validate'},
-    annotations="annotations_slideflow.csv",
+    annotations="annotation_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set",
     tile_px=args.tile_size,
