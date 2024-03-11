@@ -194,7 +194,12 @@ def read_validation_set():
     tile_um=args.magnification
     )
 
-    test_set = tile_wsis(test_set)
+    test_set =  test_set.extract_tiles(
+            qc='both', #Both use Otsu Thresholding and Blur detection
+            save_tiles=True,
+            img_format='png',
+            enable_downsample=False
+            )
 
     return test_set
 
