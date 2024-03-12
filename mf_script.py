@@ -343,9 +343,11 @@ def main(easy=False, validation=False):
     print(dataset)
 
     print("Tiling...")
-    dataset.extract_tiles(
+    project.extract_tiles(
         qc='both', #Both use Otsu Thresholding and Blur detection
         save_tiles=True,
+        tile_px=args.tile_size,
+        tile_um=args.magnification,
         img_format='png',
         enable_downsample=False
         )
@@ -422,15 +424,9 @@ def main(easy=False, validation=False):
                     }
                     df = df.append(data, ignore_index=True)
                     print(df)
-
+                    print("Validating...")
                     if validation:
-                        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
-                        bag_directory = project.generate_feature_bags(feature_extractor,
-                                                                      ext_test,
-                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
-                                                                      normalizer=normalizer,
-                                                                      normalizer_source=args.stain_norm_preset,
-                                                                      augment=args.augmentation)
+                        extract_features(extractor, normalizer, ext_set, project)
 
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
@@ -457,6 +453,8 @@ def main(easy=False, validation=False):
                         }
                         ext_df = ext_df.append(data, ignore_index=True)
                         print(ext_df)
+
+                    print("One loop done...")
 
                     split_index += 1
 
