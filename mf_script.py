@@ -200,6 +200,8 @@ def read_validation_set(project):
     test_set =  project.extract_tiles(
             qc='both', #Both use Otsu Thresholding and Blur detection
             source='ext_set',
+            tile_px=args.tile_size,
+            tile_um=args.magnification,
             save_tiles=True,
             img_format='png',
             enable_downsample=False
