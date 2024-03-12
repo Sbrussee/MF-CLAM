@@ -427,7 +427,7 @@ def main(easy=False, validation=False):
                                                                       augment=args.augmentation)
 
 
-                        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}mil/")
+                        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
                         result_frame = mil.eval_mil(
                         weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
