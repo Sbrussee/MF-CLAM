@@ -181,27 +181,30 @@ def read_easy_set():
 
     return easy_set, test_set
 
-def read_validation_set():
+def read_validation_set(project):
     #process_annotation_file("../../Thom_Doeleman/annotations.csv")
 
-    test_set = sf.Dataset(
+    project.add_source(
+    name="ext_set",
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
-    filters = {'dataset' : 'validate'},
-    annotations="annotation_slideflow.csv",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
-    tiles=f"{args.project_directory}/tiles/ext_set",
+    tiles=f"{args.project_directory}/tiles/ext_set"
+    )
+    test_set = project.Dataset(
+    sources=['ext_set'],
+    filters = {'dataset' : 'validate'},
     tile_px=args.tile_size,
     tile_um=args.magnification
     )
 
-    test_set =  test_set.extract_tiles(
+    test_set =  project.extract_tiles(
             qc='both', #Both use Otsu Thresholding and Blur detection
             save_tiles=True,
             img_format='png',
             enable_downsample=False
             )
 
-    return test_set
+    return project, test_set
 
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
@@ -354,7 +357,7 @@ def main(easy=False, validation=False):
 
     #overwrite test with external validation set
     if validation:
-        ext_test = read_validation_set()
+        project, ext_test = read_validation_set(project)
 
     results = {}
 
