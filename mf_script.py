@@ -190,7 +190,7 @@ def read_validation_set(project):
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
     tiles=f"{args.project_directory}/tiles/ext_set"
     )
-    test_set = project.Dataset(
+    test_set = project.dataset(
     sources=['ext_set'],
     filters = {'dataset' : 'validate'},
     tile_px=args.tile_size,
@@ -199,6 +199,7 @@ def read_validation_set(project):
 
     test_set =  project.extract_tiles(
             qc='both', #Both use Otsu Thresholding and Blur detection
+            source='ext_set',
             save_tiles=True,
             img_format='png',
             enable_downsample=False
