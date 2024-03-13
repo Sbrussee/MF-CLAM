@@ -403,11 +403,6 @@ def main(easy=False, validation=False):
                                                                       normalizer_source=args.stain_norm_preset,
                                                                       augment=args.augmentation)
 
-
-
-
-
-
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
 
@@ -426,7 +421,7 @@ def main(easy=False, validation=False):
                     print(df)
                     print("Validating...")
                     if validation:
-                        extract_features(extractor, normalizer, ext_set, project)
+                        extract_features(extractor, normalizer, ext_test, project)
 
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
