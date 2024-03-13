@@ -189,8 +189,7 @@ def read_validation_set(project):
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
     roi="../../Thom_Doeleman/CLAM_validate_cropped/rois",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
-    tiles=f"{args.project_directory}/tiles/ext_set",
-    path=""
+    tiles=f"{args.project_directory}/tiles/ext_set"
     )
     test_set = project.dataset(
     sources=['ext_set'],
