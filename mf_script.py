@@ -187,8 +187,10 @@ def read_validation_set(project):
     project.add_source(
     name="ext_set",
     slides="../../Thom_Doeleman/CLAM_validate_cropped",
+    roi="../../Thom_Doeleman/CLAM_validate_cropped/rois",
     tfrecords=f"{args.project_directory}/tfrecords/ext_set",
-    tiles=f"{args.project_directory}/tiles/ext_set"
+    tiles=f"{args.project_directory}/tiles/ext_set",
+    path=""
     )
     test_set = project.dataset(
     sources=['ext_set'],
@@ -197,7 +199,7 @@ def read_validation_set(project):
     tile_um=args.magnification
     )
 
-    test_set =  project.extract_tiles(
+    project.extract_tiles(
             qc='both', #Both use Otsu Thresholding and Blur detection
             source='ext_set',
             tile_px=args.tile_size,
@@ -421,8 +423,13 @@ def main(easy=False, validation=False):
                     print(df)
                     print("Validating...")
                     if validation:
-                        extract_features(extractor, normalizer, ext_test, project)
-
+                        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
+                        bag_directory = project.generate_feature_bags(feature_extractor,
+                                                                      ext_test,
+                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
+                                                                      normalizer=normalizer,
+                                                                      normalizer_source=args.stain_norm_preset,
+                                                                      augment=args.augmentation)
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
