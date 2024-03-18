@@ -345,7 +345,7 @@ def main(easy=False, validation=False):
     print(dataset)
 
     print("Tiling...")
-    project.extract_tiles(
+    dataset.extract_tiles(
         qc='both', #Both use Otsu Thresholding and Blur detection
         save_tiles=True,
         tile_px=args.tile_size,
@@ -388,7 +388,8 @@ def main(easy=False, validation=False):
                 #Set model configuration
                 config = mil_config(args.model.lower(),
                 aggregation_level=args.aggregation_level,
-                wd=1e-4)
+                wd=1e-4,
+                dropout=True)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
