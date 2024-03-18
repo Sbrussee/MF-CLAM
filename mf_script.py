@@ -376,6 +376,7 @@ def main(easy=False, validation=False):
             if normalizer.lower() == 'none':
                 normalizer = None
             for model in tqdm(models, desc="Inner model loop"):
+                print(extractor, normalizer, model)
                 extract_features(extractor, normalizer, dataset, project)
                 #Set model configuration
                 config = mil_config(args.model.lower(),
