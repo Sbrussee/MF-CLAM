@@ -133,6 +133,7 @@ def split_dataset(dataset, test_fraction=0.2):
 
 def extract_features(extractor, normalizer, dataset, project):
     feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
+    print(normalizer, args.stain_norm_preset, args.augmentation)
     bag_directory = project.generate_feature_bags(feature_extractor,
                                                   dataset,
                                                   outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
