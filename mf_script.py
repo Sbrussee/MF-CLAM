@@ -51,7 +51,7 @@ parser.add_argument('-m', '--model', choices=['Attention_MIL', 'CLAM_SB', 'CLAM_
                     help="MIL model to use", default="Attention MIL")
 
 #Set normalization parameters
-parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane', 'reinhard', 'cyclegan', 'None'], default="macenko",
+parser.add_argument('-n', '--normalization', choices=['macenko', 'vahadane_sklearn', 'reinhard', 'cyclegan', 'None'], default="macenko",
                     help="Normalization method to use, the parameter preset is set using --stain_norm_preset ")
 
 parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], default='v3',
@@ -379,7 +379,8 @@ def main(easy=False, validation=False):
                 extract_features(extractor, normalizer, dataset, project)
                 #Set model configuration
                 config = mil_config(args.model.lower(),
-                aggregation_level=args.aggregation_level)
+                aggregation_level=args.aggregation_level,
+                wd=1e-4)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
