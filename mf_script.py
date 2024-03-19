@@ -123,7 +123,7 @@ def get_highest_numbered_filename(directory_path):
 def calculate_weights(df):
     counts = df['category'].value_counts()
     weight_bids = 1 / counts.get('BID', 1)
-    weight_mfs = 2 / counts.get('MF', 1)  # Double the weight for MFs
+    weight_mfs = 4 / counts.get('MF', 1)  # 4x the weight for MFs
     return {'BID': weight_bids, 'MF': weight_mfs}
 
 def split_dataset_by_patient(dataset, test_fraction=0.2):
