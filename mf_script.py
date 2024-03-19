@@ -3,6 +3,7 @@ from slideflow.mil import mil_config
 import slideflow.mil as mil
 from slideflow.stats.metrics import ClassifierMetrics
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.model_selection import train_test_split
 import pandas as pd
 import os
 import re
@@ -118,13 +119,37 @@ def get_highest_numbered_filename(directory_path):
     print(highest_number_part)
     return highest_number_part
 
-def split_dataset(dataset, test_fraction=0.2):
-    train, test = dataset.split(
-    model_type="categorical",
-    val_strategy='fixed',
-    labels="category",
-    val_fraction=test_fraction
+def split_dataset_by_patient(dataset, test_fraction=0.2):
+    df = pd.read_csv(args.annotation_file)
+    slides_by_patient = df.groupby("patient")['slide'].apply(list).reset_index()
+    slides_by_patient = slides_by_patient.sample(frac=1).reset_index(drop=True)
+    print(slides_by_patient)
+
+    train_patients, val_patients = train_test_split(slides_by_patient, test_size=test_fraction, random_state=42)
+
+    # Extract slides for training and validation sets
+    train_slides = df[df['patient'].isin(train_patients['patient'])]
+    val_slides = df[df['patient'].isin(val_patients['patient'])]
+
+    # Save training and validation sets to new CSV files
+    train_slides.to_csv('train_slides.csv', index=False)
+    val_slides.to_csv('val_slides.csv', index=False)
+
+    train, test = sf.Dataset(
+    slides=args.slide_directory,
+    tfrecords=f"{args.project_directory}/tfrecords",
+    annotations='train_slides.csv',
+    tile_px = args.tile_size,
+    tile_um = args.magnification
+    ), sf.Dataset(
+        slides=args.slide_directory,
+        tfrecords=f"{args.project_directory}/tfrecords",
+        annotations='val_slides.csv',
+        tile_px = args.tile_size,
+        tile_um = args.magnification
     )
+
+    print(train, test)
 
     train = train.balance(headers='category', strategy=args.training_balance)
 
@@ -354,7 +379,7 @@ def main(easy=False, validation=False):
         enable_downsample=False
         )
     print("Splitting...")
-    train, test = split_dataset(dataset, test_fraction=args.test_fraction)
+    train, test = split_dataset_by_patient(dataset, test_fraction=args.test_fraction)
 
     if easy:
         train, test = read_easy_set()
@@ -387,9 +412,7 @@ def main(easy=False, validation=False):
 
                 #Set model configuration
                 config = mil_config(args.model.lower(),
-                aggregation_level=args.aggregation_level,
-                wd=1e-4,
-                dropout=True)
+                aggregation_level=args.aggregation_level)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,

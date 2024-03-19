@@ -1,18 +1,19 @@
 {
    "normalization":[
-      "macenko"
+      "macenko",
    ],
    "normalization_presets":[
       "v3"
    ],
-   "feature_extractors":[
+   "feature_extractor":[
       "resnet50_imagenet",
-      "RetCCL"
+      "RetCCL",
+      "CTransPath",
+      "HistoSSL",
+      "PLIP"
    ],
    "mil_model":[
       "CLAM_SB",
-      "CLAM_MB",
-      "Attention_MIL"
    ],
    "ssl_model":[
       "None"
