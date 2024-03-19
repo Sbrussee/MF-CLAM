@@ -16,6 +16,9 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
+os.environ['NEPTUNE_API_TOKEN'] = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ=="
+os.environ['NEPTUNE_WORKSPACE'] = "siemenbrussee/MF-CLAM"
+
 parser = argparse.ArgumentParser()
 #Global arguments
 parser.add_argument('-p', '--project_directory',
@@ -387,7 +390,7 @@ def main(easy=False, validation=False):
         )
 
     else:
-        project = sf.load_project(args.project_directory)
+        project = sf.load_project(args.project_directory, use_neptune=True)
 
 
     if args.json_file != None:
