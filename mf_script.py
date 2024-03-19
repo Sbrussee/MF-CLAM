@@ -119,6 +119,13 @@ def get_highest_numbered_filename(directory_path):
     print(highest_number_part)
     return highest_number_part
 
+# Calculate the misclassification weights
+def calculate_weights(df):
+    counts = df['category'].value_counts()
+    weight_bids = 1 / counts.get('BID', 1)
+    weight_mfs = 2 / counts.get('MF', 1)  # Double the weight for MFs
+    return {'BID': weight_bids, 'MF': weight_mfs}
+
 def split_dataset_by_patient(dataset, test_fraction=0.2):
     df = pd.read_csv(args.annotation_file)
     df = df[df['dataset'] == 'train']
@@ -137,6 +144,11 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     train_slides.to_csv('train_slides.csv', index=False)
     val_slides.to_csv('val_slides.csv', index=False)
 
+   # Assert no leakage of patients between training and validation sets
+    assert set(train_patients['patient']).intersection(set(val_patients['patient'])) == set(), "Patient leakage detected!"
+
+    print("No patient leakage!.")
+
     train, test = sf.Dataset(
     slides=args.slide_directory,
     tfrecords=f"{args.project_directory}/tfrecords",
@@ -153,7 +165,10 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
 
     print(train, test)
 
+    weights = calculate_weights(train_slides)
+
     train = train.balance(headers='category', strategy=args.training_balance)
+    train.prob_weights = weights
 
     return train, test
 
