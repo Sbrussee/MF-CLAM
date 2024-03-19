@@ -167,16 +167,24 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
 
     weights = calculate_weights(train_slides)
 
+    print(weights)
+
     # Generate TFRecord paths for each slide
     tfrecord_dir = f"{args.project_directory}/tfrecords/256px_40px"
-    tfrecord_paths = [os.path.join(tfrecord_dir, slide + '.tfrecords') for slide in train_annotations['slide']]
+    tfrecord_paths = [os.path.join(tfrecord_dir, slide + '.tfrecords') for slide in train_slides['slide']]
 
     # Map TFRecord paths to weights
-    tfrecord_weights = {tfrecord_path: weights[train_annotations.loc[train_annotations['slide'] == slide, 'category'].iloc[0]] for tfrecord_path, slide in zip(tfrecord_paths, train_annotations['slide'])}
+    tfrecord_weights = {tfrecord_path: weights[train_slides.loc[train_slides['slide'] == slide, 'category'].iloc[0]] for tfrecord_path, slide in zip(tfrecord_paths, train_slides['slide'])}
 
     print(tfrecord_weights)
+
+    # Normalize weights so that they sum up to one
+    total_weight = sum(tfrecord_weights.values())
+    tfrecord_weights_normalized = {tfrecord_path: weight / total_weight for tfrecord_path, weight in tfrecord_weights.items()}
+
+    print(tfrecord_weights_normalized)
     train = train.balance(headers='category', strategy=args.training_balance)
-    train.prob_weights = tfrecord_weights
+    train.prob_weights = tfrecord_weights_normalized
 
     return train, test
 
@@ -363,6 +371,7 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
     else:
         plt.savefig(f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}/roc_auc_test.png")
     #result_frame = pd.read_parquet(f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}/predictions.parquet", engine='pyarrow')
+
     return result_frame, balanced_accuracy, auroc
 
 def main(easy=False, validation=False):
