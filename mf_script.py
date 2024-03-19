@@ -391,6 +391,7 @@ def main(easy=False, validation=False):
 
     else:
         project = sf.load_project(args.project_directory, use_neptune=True)
+        print("Neptune:", project.neptune_api, project.neptune_workspace )
 
 
     if args.json_file != None:
