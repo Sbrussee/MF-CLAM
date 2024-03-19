@@ -164,7 +164,7 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     )
 
     print(train, test)
-
+    """
     weights = calculate_weights(train_slides)
 
     print(weights)
@@ -183,8 +183,10 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     tfrecord_weights_normalized = {tfrecord_path: weight / total_weight for tfrecord_path, weight in tfrecord_weights.items()}
 
     print(tfrecord_weights_normalized)
+    """
     train = train.balance(headers='category', strategy=args.training_balance)
-    train.prob_weights = tfrecord_weights_normalized
+    #train.prob_weights = tfrecord_weights_normalized
+
 
     return train, test
 
@@ -446,7 +448,13 @@ def main(easy=False, validation=False):
 
                 #Set model configuration
                 config = mil_config(args.model.lower(),
-                aggregation_level=args.aggregation_level)
+                aggregation_level=args.aggregation_level,
+                bag_loss='ce',
+                inst_loss='ce',
+                dropout=True,
+                epochs=64,
+                fit_one_cylce=False,
+                wd=1e-3)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
