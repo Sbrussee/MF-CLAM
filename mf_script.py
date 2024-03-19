@@ -453,7 +453,7 @@ def main(easy=False, validation=False):
                 inst_loss='ce',
                 dropout=True,
                 epochs=64,
-                fit_one_cylce=False,
+                fit_one_cycle=False,
                 wd=1e-3)
                 #Split using specified k-fold
                 splits = train.kfold_split(
