@@ -1,6 +1,6 @@
 {
    "normalization":[
-      "macenko",
+      "macenko"
    ],
    "normalization_presets":[
       "v3"
@@ -13,7 +13,7 @@
       "PLIP"
    ],
    "mil_model":[
-      "CLAM_SB",
+      "CLAM_SB"
    ],
    "ssl_model":[
       "None"
