@@ -167,8 +167,16 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
 
     weights = calculate_weights(train_slides)
 
+    # Generate TFRecord paths for each slide
+    tfrecord_dir = f"{args.project_directory}/tfrecords/256px_40px"
+    tfrecord_paths = [os.path.join(tfrecord_dir, slide + '.tfrecords') for slide in train_annotations['slide']]
+
+    # Map TFRecord paths to weights
+    tfrecord_weights = {tfrecord_path: weights[train_annotations.loc[train_annotations['slide'] == slide, 'category'].iloc[0]] for tfrecord_path, slide in zip(tfrecord_paths, train_annotations['slide'])}
+
+    print(tfrecord_weights)
     train = train.balance(headers='category', strategy=args.training_balance)
-    train.prob_weights = weights
+    train.prob_weights = tfrecord_weights
 
     return train, test
 
