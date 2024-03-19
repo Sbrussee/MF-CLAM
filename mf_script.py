@@ -121,6 +121,8 @@ def get_highest_numbered_filename(directory_path):
 
 def split_dataset_by_patient(dataset, test_fraction=0.2):
     df = pd.read_csv(args.annotation_file)
+    df = df[df['dataset'] == 'train']
+
     slides_by_patient = df.groupby("patient")['slide'].apply(list).reset_index()
     slides_by_patient = slides_by_patient.sample(frac=1).reset_index(drop=True)
     print(slides_by_patient)
