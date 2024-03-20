@@ -413,8 +413,6 @@ def main(easy=False, validation=False):
     dataset.extract_tiles(
         qc='both', #Both use Otsu Thresholding and Blur detection
         save_tiles=True,
-        tile_px=args.tile_size,
-        tile_um=args.magnification,
         img_format='png',
         enable_downsample=False
         )
