@@ -477,15 +477,6 @@ def main(easy=False, validation=False):
                                                                       normalizer_source=args.stain_norm_preset,
                                                                       augment=args.augmentation)
 
-                    #Augment images in training set
-                    bag_directory = project.generate_feature_bags(feature_extractor,
-                                                                  train,
-                                                                  outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
-                                                                  normalizer=normalizer,
-                                                                  normalizer_source=args.stain_norm_preset,
-                                                                  augment=args.augmentation,
-                                                                  force_regenerate=True)
-
 
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
