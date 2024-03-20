@@ -447,14 +447,11 @@ def main(easy=False, validation=False):
                                                               dataset,
                                                               outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
                                                               normalizer=normalizer,
-                                                              normalizer_source=args.stain_norm_preset,
-                                                              augment=args.augmentation)
+                                                              normalizer_source=args.stain_norm_preset)
 
                 #Set model configuration
                 config = mil_config(args.model.lower(),
                 aggregation_level=args.aggregation_level,
-                bag_loss='svm',
-                inst_loss='svm',
                 epochs=64)
                 #Split using specified k-fold
                 splits = train.kfold_split(
@@ -480,6 +477,16 @@ def main(easy=False, validation=False):
                                                                       normalizer_source=args.stain_norm_preset,
                                                                       augment=args.augmentation)
 
+                    #Augment images in training set
+                    bag_directory = project.generate_feature_bags(feature_extractor,
+                                                                  train,
+                                                                  outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}",
+                                                                  normalizer=normalizer,
+                                                                  normalizer_source=args.stain_norm_preset,
+                                                                  augment=args.augmentation,
+                                                                  force_regenerate=True)
+
+
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
 
@@ -503,8 +510,7 @@ def main(easy=False, validation=False):
                                                                       ext_test,
                                                                       outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
                                                                       normalizer=normalizer,
-                                                                      normalizer_source=args.stain_norm_preset,
-                                                                      augment=args.augmentation)
+                                                                      normalizer_source=args.stain_norm_preset)
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
