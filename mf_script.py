@@ -15,9 +15,15 @@ import pickle
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import netpune
 
 os.environ['NEPTUNE_API_TOKEN'] = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ=="
 os.environ['NEPTUNE_WORKSPACE'] = "siemenbrussee"
+
+run = neptune.init_run(
+    project="siemenbrussee/MF-CLAM",
+    api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ==",
+)
 
 parser = argparse.ArgumentParser()
 #Global arguments
@@ -567,7 +573,7 @@ def main(easy=False, validation=False):
         pickle.dump(results, f)
 
 
-
+run.stop()
 
 if __name__ == "__main__":
     annotations = "../../Thom_Doeleman/annotations.csv"
