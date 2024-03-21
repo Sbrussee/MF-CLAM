@@ -513,7 +513,7 @@ def main(easy=False, validation=False):
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
                     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
-
+                    """
                     labels, unique_labels = dataset.labels('category', format="name")
                     #Visualize features
                     features = sf.DatasetFeatures(
@@ -532,7 +532,7 @@ def main(easy=False, validation=False):
                     slide_map.plot()
                     plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_int_set", dpi=300)
                     plt.close()
-
+                    """
                     #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
                     print("Balanced Accuracy: ", balanced_accuracy)
@@ -555,7 +555,9 @@ def main(easy=False, validation=False):
                                                                       normalizer=normalizer,
                                                                       normalizer_source=args.stain_norm_preset)
 
+                        """
                         labels, unique_labels = ext_set.labels('category', format="name")
+
                         #Visualize features
                         features = sf.DatasetFeatures(
                         model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
@@ -574,6 +576,7 @@ def main(easy=False, validation=False):
                         slide_map.plot()
                         plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set", dpi=300)
                         plt.close()
+                        """
 
                         config =  mil_config(args.model.lower(),
                         aggregation_level='slide',
