@@ -485,8 +485,6 @@ def main(easy=False, validation=False):
                 fit_one_cycle=False,
                 wd=1e-3,
                 dropout=True)
-                #Set loss to focal loss
-                config.loss_fn = FocalLoss()
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
