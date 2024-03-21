@@ -512,7 +512,7 @@ def main(easy=False, validation=False):
 
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
-
+                    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
                     #Visualize features
                     features = project.generate_features(
