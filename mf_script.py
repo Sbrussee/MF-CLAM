@@ -10,6 +10,7 @@ import re
 import argparse
 import json
 import torch
+import torch.nn.functional as F
 from tqdm import tqdm
 import pickle
 from datetime import datetime
@@ -19,6 +20,7 @@ import netpune
 
 os.environ['NEPTUNE_API_TOKEN'] = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ=="
 os.environ['NEPTUNE_WORKSPACE'] = "siemenbrussee"
+os.environ['NETPUNE_PROJECT'] = "siemenbrussee/MF-CLAM"
 
 run = neptune.init_run(
     project="siemenbrussee/MF-CLAM",
@@ -91,6 +93,25 @@ else:
 if args.json_file != None:
     with open(args.json_file, "r") as params_file:
         params = json.load(params_file)
+
+class FocalLoss(torch.nn.Module):
+    def __init__(self, alpha=1, gamma=2, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        ce_loss = F.cross_entropy(inputs, targets, reduction=self.reduction)
+        pt = torch.exp(-ce_loss)
+        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        if self.reduction == 'mean':
+            return torch.mean(focal_loss)
+        elif self.reduction == 'sum':
+            return torch.sum(focal_loss)
+        else:
+            return focal_loss
+
 
 def process_annotation_file(original_path):
     df = pd.read_csv(original_path, header=0, sep=";")
@@ -456,7 +477,12 @@ def main(easy=False, validation=False):
                 #Set model configuration
                 config = mil_config(args.model.lower(),
                 aggregation_level=args.aggregation_level,
-                epochs=64)
+                epochs=64,
+                fit_one_cycle=False,
+                wd=1e-3,
+                dropout=True)
+                #Set loss to focal loss
+                config.loss_fn = FocalLoss()
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
@@ -485,6 +511,25 @@ def main(easy=False, validation=False):
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
 
+
+                    #Visualize features
+                    features = project.generate_features(
+                    model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                    dataset=dataset,
+                    outcomes="category"
+                    )
+
+                    slide_map = features.map_activations(
+                    n_neighbors=10,
+                    min_dist=0.2
+                    )
+
+                    labels, unique_labels = ext_set.labels('category', format="name")
+                    slide_map.label_per_slide(labels)
+                    slide_map.plot()
+                    plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_int_set", dpi=300)
+                    plt.close()
+
                     #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
                     print("Balanced Accuracy: ", balanced_accuracy)
@@ -506,6 +551,28 @@ def main(easy=False, validation=False):
                                                                       outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_ext_set",
                                                                       normalizer=normalizer,
                                                                       normalizer_source=args.stain_norm_preset)
+
+                        #Visualize features
+                        features = project.generate_features(
+                        model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                        dataset=ext_set,
+                        outcomes="category"
+                        )
+
+                        slide_map = features.map_activations(
+                        n_neighbors=10,
+                        min_dist=0.2
+                        )
+
+                        labels, unique_labels = ext_set.labels('category', format="name")
+                        slide_map.label_per_slide(labels)
+                        slide_map.plot()
+                        plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set", dpi=300)
+                        plt.close()
+
+
+
+
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
@@ -573,7 +640,7 @@ def main(easy=False, validation=False):
         pickle.dump(results, f)
 
 
-run.stop()
+    run.stop()
 
 if __name__ == "__main__":
     annotations = "../../Thom_Doeleman/annotations.csv"
