@@ -16,7 +16,7 @@ import pickle
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-import netpune
+import neptune
 
 os.environ['NEPTUNE_API_TOKEN'] = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ=="
 os.environ['NEPTUNE_WORKSPACE'] = "siemenbrussee"
