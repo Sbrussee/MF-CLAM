@@ -514,19 +514,20 @@ def main(easy=False, validation=False):
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
                     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
+                    labels, unique_labels = dataset.labels('category', format="name")
                     #Visualize features
-                    features = project.generate_features(
+                    features = sf.DatasetFeatures(
                     model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
                     dataset=dataset,
-                    outcomes="category"
-                    )
+                    labels=labels,
+                    normalizer=normalizer,
+                    normalizer_source=args.stain_norm_preset)
 
                     slide_map = features.map_activations(
                     n_neighbors=10,
                     min_dist=0.2
                     )
 
-                    labels, unique_labels = ext_set.labels('category', format="name")
                     slide_map.label_per_slide(labels)
                     slide_map.plot()
                     plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_int_set", dpi=300)
@@ -554,12 +555,14 @@ def main(easy=False, validation=False):
                                                                       normalizer=normalizer,
                                                                       normalizer_source=args.stain_norm_preset)
 
+                        labels, unique_labels = ext_set.labels('category', format="name")
                         #Visualize features
-                        features = project.generate_features(
-                        model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                        features = sf.DatasetFeatures(
+                        model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
                         dataset=ext_set,
-                        outcomes="category"
-                        )
+                        labels=labels,
+                        normalizer=normalizer,
+                        normalizer_source=args.stain_norm_preset)
 
                         slide_map = features.map_activations(
                         n_neighbors=10,
