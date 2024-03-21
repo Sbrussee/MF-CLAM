@@ -318,6 +318,10 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
+        config =  mil_config(args.model.lower(),
+        aggregation_level='slide',
+        epochs=64)
+
         result_frame = mil.eval_mil(
         weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
         outcomes="category",
@@ -570,7 +574,9 @@ def main(easy=False, validation=False):
                         plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set", dpi=300)
                         plt.close()
 
-
+                        config =  mil_config(args.model.lower(),
+                        aggregation_level='slide',
+                        epochs=64)
 
 
 
