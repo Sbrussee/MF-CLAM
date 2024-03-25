@@ -21,12 +21,12 @@ import neptune
 os.environ['NEPTUNE_API_TOKEN'] = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ=="
 os.environ['NEPTUNE_WORKSPACE'] = "siemenbrussee"
 os.environ['NETPUNE_PROJECT'] = "siemenbrussee/MF-CLAM"
-
+"""
 run = neptune.init_run(
     project="siemenbrussee/MF-CLAM",
     api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3MWI4Zjg5My04NTdlLTQxMGItYTcwZC02ZGIwMmE0NWUwMjQifQ==",
 )
-
+"""
 parser = argparse.ArgumentParser()
 #Global arguments
 parser.add_argument('-p', '--project_directory',
@@ -305,6 +305,16 @@ def read_validation_set(project):
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
 
+
+    config = mil_config(aggregation_level = args.aggregation_level,
+    lr=None,
+    trainer='fastai',
+    wd=1e-03,
+    fit_one_cycle=False,
+    epochs=64,
+    dropout=True)
+
+    print(config)
     if args.aggregation_level == 'patient':
         project.train_mil(
         config=config,
@@ -651,7 +661,7 @@ def main(easy=False, validation=False):
         pickle.dump(results, f)
 
 
-    run.stop()
+    #run.stop()
 
 if __name__ == "__main__":
     annotations = "../../Thom_Doeleman/annotations.csv"
