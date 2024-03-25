@@ -213,7 +213,7 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     tfrecord_weights_normalized = {tfrecord_path: weight / total_weight for tfrecord_path, weight in tfrecord_weights.items()}
 
     print(tfrecord_weights_normalized)
-`   """`
+`   """
     train = train.balance(headers='category', strategy=args.training_balance)
     #test = test.balance(headers='category', strategy=args.training_balance)
     #train.prob_weights = tfrecord_weights_normalized
