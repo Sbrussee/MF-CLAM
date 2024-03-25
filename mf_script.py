@@ -310,9 +310,9 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     aggregation_level = args.aggregation_level,
     lr=None,
     trainer='fastai',
-    wd=1e-02,
+    wd=1e-01,
     fit_one_cycle=False,
-    epochs=64,
+    epochs=32,
     dropout=True)
 
     print(config)
@@ -459,6 +459,8 @@ def main(easy=False, validation=False):
         img_format='png',
         enable_downsample=False
         )
+
+    dataset.balance(headers='category', strategy=args.training_balance)
     print("Splitting...")
     train, test = split_dataset_by_patient(dataset, test_fraction=args.test_fraction)
 
