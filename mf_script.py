@@ -153,7 +153,7 @@ def get_highest_numbered_filename(directory_path):
 def calculate_weights(df):
     counts = df['category'].value_counts()
     weight_bids = 1 / counts.get('BID', 1)
-    weight_mfs = 4 / counts.get('MF', 1)  # 4x the weight for MFs
+    weight_mfs = 2 / counts.get('MF', 1)  # 2x the weight for MFs
     return {'BID': weight_bids, 'MF': weight_mfs}
 
 def split_dataset_by_patient(dataset, test_fraction=0.2):
@@ -194,7 +194,7 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     )
 
     print(train, test)
-    """
+
     weights = calculate_weights(train_slides)
 
     print(weights)
@@ -213,9 +213,10 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     tfrecord_weights_normalized = {tfrecord_path: weight / total_weight for tfrecord_path, weight in tfrecord_weights.items()}
 
     print(tfrecord_weights_normalized)
-    """
+
     train = train.balance(headers='category', strategy=args.training_balance)
-    #train.prob_weights = tfrecord_weights_normalized
+    test = test.balance(headers='category', strategy=args.training_balance)
+    train.prob_weights = tfrecord_weights_normalized
 
 
     return train, test
