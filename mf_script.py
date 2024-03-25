@@ -310,7 +310,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     aggregation_level = args.aggregation_level,
     lr=None,
     trainer='fastai',
-    wd=1e-02.5,
+    wd=(1e-02)/2,
     fit_one_cycle=False,
     epochs=64,
     dropout=True)
