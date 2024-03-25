@@ -483,7 +483,7 @@ def main(easy=False, validation=False):
                 aggregation_level=args.aggregation_level,
                 epochs=64,
                 fit_one_cycle=False,
-                wd=1e-3,
+                wd=1e-2,
                 dropout=True)
                 #Split using specified k-fold
                 splits = train.kfold_split(
