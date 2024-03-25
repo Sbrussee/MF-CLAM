@@ -464,7 +464,7 @@ def main(easy=False, validation=False):
     dataset.balance(headers='category', strategy=args.training_balance)
     print("Splitting...")
     train, test = split_dataset_by_patient(dataset, test_fraction=args.test_fraction)
-    train, test = dataset.split(labels='category', outcome_key='category', val_fraction=args.test_fraction)
+    train, test = dataset.split(labels='category',  val_fraction=args.test_fraction)
 
     if easy:
         train, test = read_easy_set()
