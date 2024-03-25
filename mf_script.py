@@ -310,11 +310,13 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     aggregation_level = args.aggregation_level,
     lr=None,
     trainer='fastai',
-    wd=0.25,
+    wd=0.5,
     fit_one_cycle=False,
     epochs=32,
     dropout=True,
-    batch_size=16)
+    batch_size=16,
+    inst_loss='svm',
+    bag_loss='svm')
 
     print(config)
     if args.aggregation_level == 'patient':
@@ -499,7 +501,7 @@ def main(easy=False, validation=False):
                 aggregation_level=args.aggregation_level,
                 epochs=64,
                 fit_one_cycle=False,
-                wd=1e-2,
+                wd=0.1,
                 dropout=True,
                 inst_loss='svm',
                 bag_loss='svm')
