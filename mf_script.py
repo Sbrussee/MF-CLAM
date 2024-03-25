@@ -306,7 +306,7 @@ def read_validation_set(project):
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
 
 
-    config = mil_config(model = model,
+    config = mil_config(model = model.lower(),
     aggregation_level = args.aggregation_level,
     lr=None,
     trainer='fastai',
