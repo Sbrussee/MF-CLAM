@@ -500,7 +500,9 @@ def main(easy=False, validation=False):
                 epochs=64,
                 fit_one_cycle=False,
                 wd=1e-2,
-                dropout=True)
+                dropout=True,
+                inst_loss='svm',
+                bag_loss='svm')
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
