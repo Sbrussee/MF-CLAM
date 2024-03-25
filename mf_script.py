@@ -194,7 +194,7 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     )
 
     print(train, test)
-
+    """
     weights = calculate_weights(train_slides)
 
     print(weights)
@@ -213,10 +213,10 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     tfrecord_weights_normalized = {tfrecord_path: weight / total_weight for tfrecord_path, weight in tfrecord_weights.items()}
 
     print(tfrecord_weights_normalized)
-
+`   """`
     train = train.balance(headers='category', strategy=args.training_balance)
-    test = test.balance(headers='category', strategy=args.training_balance)
-    train.prob_weights = tfrecord_weights_normalized
+    #test = test.balance(headers='category', strategy=args.training_balance)
+    #train.prob_weights = tfrecord_weights_normalized
 
 
     return train, test
@@ -310,7 +310,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
     aggregation_level = args.aggregation_level,
     lr=None,
     trainer='fastai',
-    wd=1e-03,
+    wd=1e-02.5,
     fit_one_cycle=False,
     epochs=64,
     dropout=True)
