@@ -445,6 +445,14 @@ def main(easy=False, validation=False):
         models = [args.model]
 
 
+    project.add_source(
+    name="ext_set",
+    slides="../../Thom_Doeleman/CLAM_validate_cropped",
+    roi="../../Thom_Doeleman/CLAM_validate_cropped/rois",
+    tfrecords=f"{args.project_directory}/tfrecords/ext_set",
+    tiles=f"{args.project_directory}/tiles/ext_set"
+    )
+
     print(args.tile_size, args.magnification)
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification)
     print(dataset)
@@ -493,12 +501,7 @@ def main(easy=False, validation=False):
                 #Set model configuration
                 config = mil_config(args.model.lower(),
                 aggregation_level=args.aggregation_level,
-                epochs=64,
-                fit_one_cycle=False,
-                wd=0.1,
-                dropout=True,
-                inst_loss='svm',
-                bag_loss='svm')
+                epochs=32)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
@@ -569,7 +572,7 @@ def main(easy=False, validation=False):
                                                                       normalizer=normalizer,
                                                                       normalizer_source=args.stain_norm_preset)
 
-                        """
+
                         labels, unique_labels = ext_set.labels('category', format="name")
 
                         #Visualize features
@@ -590,7 +593,7 @@ def main(easy=False, validation=False):
                         slide_map.plot()
                         plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set", dpi=300)
                         plt.close()
-                        """
+
 
                         config =  mil_config(args.model.lower(),
                         aggregation_level='slide',
