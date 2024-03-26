@@ -308,7 +308,6 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
     config = mil_config(model = model.lower(),
     aggregation_level = args.aggregation_level,
-    lr=None,
     trainer='fastai',
     epochs=32,
     batch_size=32)
@@ -330,7 +329,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
         config =  mil_config(args.model.lower(),
         aggregation_level='slide',
-        epochs=64)
+        epochs=32)
 
         result_frame = mil.eval_mil(
         weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
@@ -447,7 +446,7 @@ def main(easy=False, validation=False):
 
 
     print(args.tile_size, args.magnification)
-    dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification, filters={'dataset' : 'train'})
+    dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification)
     print(dataset)
 
     print("Tiling...")
@@ -458,10 +457,10 @@ def main(easy=False, validation=False):
         enable_downsample=False
         )
 
-    dataset.balance(headers='category', strategy=args.training_balance)
+
     print("Splitting...")
     train, test = split_dataset_by_patient(dataset, test_fraction=args.test_fraction)
-    train, test = dataset.split(labels='category',  val_fraction=args.test_fraction)
+    #train, test = dataset.split(labels='category',  val_fraction=args.test_fraction)
 
     if easy:
         train, test = read_easy_set()
@@ -671,4 +670,4 @@ if __name__ == "__main__":
     annotations = "../../Thom_Doeleman/annotations.csv"
     if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
-    main(easy=False, validation=True)
+    main(easy=False, validation=False)
