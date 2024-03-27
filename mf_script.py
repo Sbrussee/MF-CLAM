@@ -568,12 +568,7 @@ def main(easy=False, validation=False):
                 #Set model configuration
                 config = mil_config(args.model.lower(),
                 aggregation_level=args.aggregation_level,
-                epochs=64,
-                fit_one_cycle=False,
-                wd=0.1,
-                dropout=True,
-                inst_loss='svm',
-                bag_loss='svm')
+                epochs=32)
                 #Split using specified k-fold
                 splits = train.kfold_split(
                 k=args.k_fold,
