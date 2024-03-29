@@ -153,14 +153,10 @@ class barlow_twins_feature_extractor(TorchFeatureExtractor):
 
         # Define image preprocessing
         self.transform = transforms.Compose([
-            transforms.Resize(tile_px),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
+            transforms.Resize(tile_px)
         ])
-        # Disable Slideflow standardization
-        self.preprocess_kwargs = {'standardize': False}
+        # Slideflow standardization
+        self.preprocess_kwargs = {'standardize': True}
 
     def dump_config(self):
         return {
