@@ -76,7 +76,7 @@ parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], de
 parser.add_argument('-j', '--json_file', default=None,
                     help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
 
-parser.add_argument('-mm', '--multi_magnification', default=False)
+parser.add_argument('-mm', '--multi_magnification', default=False, action='store_true')
 args = parser.parse_args()
 #Print chosen arguments
 print(args)
