@@ -191,8 +191,14 @@ class FocalLoss(torch.nn.Module):
 def process_annotation_file(original_path):
     df = pd.read_csv(original_path, header=0, sep=";")
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
+    # Finding duplicate rows based on 'slide' column
+    duplicate_rows = df[df.duplicated(subset='slide', keep=False)]
+
+    # Printing duplicate rows
+    print("Duplicate Rows based on 'slide' column:")
+    print(duplicate_rows)
     #df['slide'] = df['slide'].apply(lambda x:x + '.tiff')
-    #df.drop_duplicates(inplace=True, subset="slide")
+    df.drop_duplicates(inplace=True, subset="slide")
     #rows_to_drop = df[(df['patient'].isin([3787608, 8839385, 9476237, 1093978])) & (df['category'] == 'BID')].index
     #df = df.drop(rows_to_drop)
     print("Processed annotation file: ", df)
