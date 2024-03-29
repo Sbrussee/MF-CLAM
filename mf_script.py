@@ -127,14 +127,23 @@ def get_pretrained_url(key):
     pretrained_url = f"{URL_PREFIX}/{model_zoo_registry.get(key)}"
     return pretrained_url
 
+def download_pretrained_weights(key, destination):
+    pretrained_url = get_pretrained_url(key)
+    if not os.path.exists(destination):
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        print(f"Downloading pretrained weights for {key}...")
+        torch.hub.download_url_to_file(pretrained_url, destination)
+        print("Pretrained weights downloaded successfully.")
+    else:
+        print(f"Pretrained weights for {key} already exist, skipping download.")
+
 def resnet50(pretrained, progress, key, **kwargs):
     model = ResNetTrunk(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
+        weights_path = f"pretrained_weights/{key}.torch"
         pretrained_url = get_pretrained_url(key)
-        verbose = model.load_state_dict(
-            torch.hub.load_state_dict_from_url(pretrained_url, progress=progress)
-        )
-        print(verbose)
+        download_pretrained_weights(key, weights_path)
+        model.load_state_dict(torch.load(weights_path))
     return model
 
 @register_torch
