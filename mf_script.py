@@ -156,7 +156,8 @@ class barlow_twins_feature_extractor(TorchFeatureExtractor):
         self.transform = transforms.Compose([
             transforms.Resize(tile_px),
             # Convert input image to torch.uint8
-            transforms.Lambda(lambda x: x / 255.)
+            transforms.Lambda(lambda x: x / 255.),
+
         ])
 
         # Slideflow standardization
