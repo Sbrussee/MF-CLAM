@@ -155,16 +155,19 @@ class barlow_twins_feature_extractor(TorchFeatureExtractor):
 
         self.transform = transforms.Compose([
             transforms.Resize(tile_px),
-            # Convert input image to torch.uint8
-            transforms.Lambda(lambda x: x.to(torch.uint8))
+            #transforms.Lambda(lambda x: x / 255.),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
         ])
 
         # Slideflow standardization
-        self.preprocess_kwargs = {'standardize': True}
+        self.preprocess_kwargs = {'standardize': False}
 
     def dump_config(self):
         return {
-            'class': 'BarlowTwinsFeatureExtractor',
+            'class': 'barlow_twins_feature_extractor',
             'kwargs': {}
         }
 
