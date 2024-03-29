@@ -136,7 +136,7 @@ def resnet50(pretrained, progress, key, **kwargs):
     return model
 
 @register_torch
-class BarlowTwinsFeatureExtractor(TorchFeatureExtractor):
+class barlow_twins_feature_extractor(TorchFeatureExtractor):
 
     tag = 'barlow_twins_feature_extractor'
 
@@ -193,8 +193,8 @@ def process_annotation_file(original_path):
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     #df['slide'] = df['slide'].apply(lambda x:x + '.tiff')
     df.drop_duplicates(inplace=True, subset="slide")
-    rows_to_drop = df[(df['patient'].isin([3787608, 8839385, 9476237, 1093978])) & (df['category'] == 'BID')].index
-    df = df.drop(rows_to_drop)
+    #rows_to_drop = df[(df['patient'].isin([3787608, 8839385, 9476237, 1093978])) & (df['category'] == 'BID')].index
+    #df = df.drop(rows_to_drop)
     print("Processed annotation file: ", df)
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False,sep=",")
 
