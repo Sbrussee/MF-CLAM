@@ -163,7 +163,6 @@ class barlow_twins_feature_extractor(TorchFeatureExtractor):
         self.num_features = 2048  # Assuming ResNet50 output features of size 2048
 
         self.transform = transforms.Compose([
-            transforms.Resize(tile_px),
             transforms.Lambda(lambda x: x / 255.),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
