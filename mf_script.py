@@ -689,43 +689,42 @@ def main(easy=False, validation=False):
 
 
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
-                    if result_frame != None:
 
-                        result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
-                        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
-                        """
-                        labels, unique_labels = dataset.labels('category', format="name")
-                        #Visualize features
-                        features = sf.DatasetFeatures(
-                        model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-                        dataset=dataset,
-                        labels=labels,
-                        normalizer=normalizer,
-                        normalizer_source=args.stain_norm_preset)
+                    result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
+                    current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
+                    """
+                    labels, unique_labels = dataset.labels('category', format="name")
+                    #Visualize features
+                    features = sf.DatasetFeatures(
+                    model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                    dataset=dataset,
+                    labels=labels,
+                    normalizer=normalizer,
+                    normalizer_source=args.stain_norm_preset)
 
-                        slide_map = features.map_activations(
-                        n_neighbors=10,
-                        min_dist=0.2
-                        )
+                    slide_map = features.map_activations(
+                    n_neighbors=10,
+                    min_dist=0.2
+                    )
 
-                        slide_map.label_per_slide(labels)
-                        slide_map.plot()
-                        plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_int_set", dpi=300)
-                        plt.close()
-                        """
-                        #print(extractor, normalizer, model, result_frame)
-                        results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
-                        print("Balanced Accuracy: ", balanced_accuracy)
-                        data = {
-                        'normalization' : normalizer,
-                        'feature_extractor' : extractor,
-                        'mil_model' : model,
-                        'split': split_index,
-                        'balanced_accuracy' : balanced_accuracy,
-                        'auc' : roc_auc
-                        }
-                        df = df.append(data, ignore_index=True)
-                        print(df)
+                    slide_map.label_per_slide(labels)
+                    slide_map.plot()
+                    plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_int_set", dpi=300)
+                    plt.close()
+                    """
+                    #print(extractor, normalizer, model, result_frame)
+                    results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
+                    print("Balanced Accuracy: ", balanced_accuracy)
+                    data = {
+                    'normalization' : normalizer,
+                    'feature_extractor' : extractor,
+                    'mil_model' : model,
+                    'split': split_index,
+                    'balanced_accuracy' : balanced_accuracy,
+                    'auc' : roc_auc
+                    }
+                    df = df.append(data, ignore_index=True)
+                    print(df)
                     print("Validating...")
                     if validation:
                         feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
