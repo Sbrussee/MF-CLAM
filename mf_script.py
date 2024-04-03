@@ -424,6 +424,10 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             aggregation_level='slide',
             epochs=32)
 
+            bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
+            bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
+            bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
+
             result_frame = mil.eval_mil(
             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
             outcomes="category",
@@ -634,11 +638,11 @@ def main(easy=False, validation=False):
     df = pd.DataFrame(columns=columns)
     if validation:
         ext_df = pd.DataFrame(columns=columns)
-    for extractor in tqdm(extractors, desc="Outer extractor loop"):
-        for normalizer in tqdm(normalizers, desc="Middle normalizer loop"):
+    for extractor in extractors:
+        for normalizer in normalizers:
             if normalizer.lower() == 'none':
                 normalizer = None
-            for model in tqdm(models, desc="Inner model loop"):
+            for model in models:
                 feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
                 bag_directory = project.generate_feature_bags(feature_extractor,
                                                               dataset,
@@ -745,9 +749,7 @@ def main(easy=False, validation=False):
 
                         config =  mil_config(args.model.lower(),
                         aggregation_level='slide',
-                        epochs=64)
-
-
+                        epochs=32)
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
