@@ -773,7 +773,7 @@ def main(easy=False, validation=False):
                             result_frame = mil.eval_mil(
                             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
                             outcomes="category",
-                            dataset=test,
+                            dataset=ext_test,
                             bags=[bags10x, bags20x, bags40x],
                             config=config,
                             outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
