@@ -420,12 +420,11 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
             current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
-            result_frame=None
 
             #config =  mil_config(args.model.lower(),
             #aggregation_level='slide',
             #epochs=32)
-            """
+
             bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
             bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
             bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
@@ -434,13 +433,13 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
             outcomes="category",
             dataset=test,
-            bags=[bags10x, bags20x, bags40x],
+            bags=bags40x,
             config=config,
             outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
             #attention_heatmaps=True,
             #cmap="coolwarm"
             )
-            """
+
 
         else:
             project.train_mil(
@@ -493,7 +492,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             #config =  mil_config(args.model.lower(),
             #aggregation_level='slide',
             #epochs=32)
-            """
+
             bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
             bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
             bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
@@ -502,13 +501,13 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
             outcomes="category",
             dataset=test,
-            bags=[bags10x, bags20x, bags40x],
+            bags=bags40x,
             config=config,
             outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
             #attention_heatmaps=True,
             #cmap="coolwarm"
             )
-            """
+
         else:
             project.train_mil(
             config=config,
@@ -774,7 +773,7 @@ def main(easy=False, validation=False):
                             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
                             outcomes="category",
                             dataset=ext_test,
-                            bags=[bags10x, bags20x, bags40x],
+                            bags=bags40x,
                             config=config,
                             outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
                             #attention_heatmaps=True,
