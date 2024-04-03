@@ -636,6 +636,9 @@ def main(easy=False, validation=False):
     if validation:
         project, ext_test = read_validation_set(project)
 
+    if args.multi_magnification:
+        args.model = "mm_attention_mil"
+
     results = {}
 
     columns = ['normalization', 'feature_extractor', 'mil_model', 'split', 'balanced_accuracy', 'auc']
