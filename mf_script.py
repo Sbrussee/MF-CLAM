@@ -759,9 +759,9 @@ def main(easy=False, validation=False):
                         plt.close()
                         """
 
-                        config =  mil_config(args.model.lower(),
-                        aggregation_level='slide',
-                        epochs=32)
+                        #config =  mil_config(args.model.lower(),
+                        #aggregation_level='slide',
+                        #epochs=32)
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
