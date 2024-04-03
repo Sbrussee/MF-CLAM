@@ -423,7 +423,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             #config =  mil_config(args.model.lower(),
             #aggregation_level='slide',
             #epochs=32)
-
+            """
             bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
             bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
             bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
@@ -438,7 +438,7 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             #attention_heatmaps=True,
             #cmap="coolwarm"
             )
-
+            """
 
         else:
             project.train_mil(
