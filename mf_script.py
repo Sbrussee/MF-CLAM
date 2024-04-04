@@ -460,127 +460,23 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
     print(config)
     if args.aggregation_level == 'patient':
+        project.train_mil(
+        config=config,
+        outcomes="category",
+        train_dataset=train,
+        val_dataset=val,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
+        #attention_heatmaps=True,
+        #cmap="coolwarm",
+        exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
+        )
 
-        if args.multi_magnification == True:
-            bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
-            bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
-            bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
+        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
-            project.train_mil(
-            config=config,
-            outcomes="category",
-            train_dataset=train,
-            val_dataset=val,
-            bags=[bags10x, bags20x, bags40x],
-            #attention_heatmaps=True,
-            #cmap="coolwarm",
-            exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
-            )
-
-            current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
-
-            if args.slide_evaluation == True:
-                config =  mil_config(args.model.lower(),
-                aggregation_level='slide',
-                epochs=32)
-
-            bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
-            bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
-            bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
-
-            result_frame = mil.eval_mil(
-            weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-            outcomes="category",
-            dataset=test,
-            bags=bags40x,
-            config=config,
-            outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-            #attention_heatmaps=True,
-            #cmap="coolwarm"
-            )
-
-
-        else:
-            project.train_mil(
-            config=config,
-            outcomes="category",
-            train_dataset=train,
-            val_dataset=val,
-            bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
-            #attention_heatmaps=True,
-            #cmap="coolwarm",
-            exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
-            )
-
-            current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
-
-            if args.slide_evaluation == True:
-                config =  mil_config(args.model.lower(),
-                aggregation_level='slide',
-                epochs=32)
-
-            result_frame = mil.eval_mil(
-            weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-            outcomes="category",
-            dataset=test,
-            bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
-            config=config,
-            outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-            #attention_heatmaps=True,
-            #cmap="coolwarm"
-            )
-
-    elif args.aggregation_level == 'slide':
-        if args.multi_magnification == True:
-            bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
-            bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
-            bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
-
-            project.train_mil(
-            config=config,
-            outcomes="category",
-            train_dataset=train,
-            val_dataset=val,
-            bags=[bags10x, bags20x, bags40x],
-            #attention_heatmaps=True,
-            #cmap="coolwarm",
-            exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
-            )
-
-            current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
-
-            #config =  mil_config(args.model.lower(),
-            #aggregation_level='slide',
-            #epochs=32)
-
-            bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
-            bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
-            bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}"
-
-            result_frame = mil.eval_mil(
-            weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-            outcomes="category",
-            dataset=test,
-            bags=bags40x,
-            config=config,
-            outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-            #attention_heatmaps=True,
-            #cmap="coolwarm"
-            )
-
-        else:
-            project.train_mil(
-            config=config,
-            outcomes="category",
-            train_dataset=train,
-            val_dataset=val,
-            bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
-            attention_heatmaps=True,
-            cmap="coolwarm",
-            exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
-            )
-
-            current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
+        if args.slide_evaluation == True:
+            config =  mil_config(args.model.lower(),
+            aggregation_level='slide',
+            epochs=32)
 
             result_frame = mil.eval_mil(
             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
@@ -591,7 +487,42 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
             outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
             attention_heatmaps=True,
             cmap="coolwarm"
-            )
+        )
+        else:
+            result_frame = mil.eval_mil(
+            weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+            outcomes="category",
+            dataset=test,
+            bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
+            config=config,
+            outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+            #attention_heatmaps=True,
+            #cmap="coolwarm"
+        )
+    elif args.aggregation_level == 'slide':
+        project.train_mil(
+        config=config,
+        outcomes="category",
+        train_dataset=train,
+        val_dataset=val,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
+        attention_heatmaps=True,
+        cmap="coolwarm",
+        exp_label=f"{model.lower()}_{extractor.lower()}_{normalizer.lower()}"
+        )
+
+        current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
+
+        result_frame = mil.eval_mil(
+        weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+        outcomes="category",
+        dataset=test,
+        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
+        config=config,
+        outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+        attention_heatmaps=True,
+        cmap="coolwarm"
+        )
     return result_frame
 
 
