@@ -77,6 +77,7 @@ parser.add_argument('-j', '--json_file', default=None,
                     help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
 
 parser.add_argument('-mm', '--multi_magnification', default=False, action='store_true')
+parser.add_argument('-se', '--slide_evaluation', default=False, action='store_true')
 args = parser.parse_args()
 #Print chosen arguments
 print(args)
@@ -420,10 +421,10 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
             current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
-
-            #config =  mil_config(args.model.lower(),
-            #aggregation_level='slide',
-            #epochs=32)
+            if args.slide_evaluation == True:
+                config =  mil_config(args.model.lower(),
+                aggregation_level='slide',
+                epochs=32)
 
             bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}"
             bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}"
@@ -455,9 +456,10 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
             current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
-            #config =  mil_config(args.model.lower(),
-            #aggregation_level='slide',
-            #epochs=32)
+            if args.slide_evaluation == True:
+                config =  mil_config(args.model.lower(),
+                aggregation_level='slide',
+                epochs=32)
 
             result_frame = mil.eval_mil(
             weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
@@ -757,9 +759,10 @@ def main(easy=False, validation=False):
                         plt.close()
                         """
 
-                        #config =  mil_config(args.model.lower(),
-                        #aggregation_level='slide',
-                        #epochs=32)
+                        if args.slide_evaluation:
+                            config =  mil_config(args.model.lower(),
+                            aggregation_level='slide',
+                            epochs=32)
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
