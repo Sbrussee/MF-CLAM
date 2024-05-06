@@ -6,11 +6,7 @@
       "v3"
    ],
    "feature_extractor":[
-      "resnet50_imagenet",
-      "RetCCL",
-      "CTransPath",
-      "HistoSSL",
-      "PLIP"
+      "CTransPath"
    ],
    "mil_model":[
       "CLAM_SB"
