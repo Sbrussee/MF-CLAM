@@ -76,7 +76,6 @@ parser.add_argument('-sp', '--stain_norm_preset', choices=['v1', 'v2', 'v3'], de
 parser.add_argument('-j', '--json_file', default=None,
                     help="JSON file to load for defining experiments with multiple models/extractors/normalization steps. Overrides other parsed arguments.")
 
-parser.add_argument('-mm', '--multi_magnification', default=False, action='store_true')
 parser.add_argument('-se', '--slide_evaluation', default=False, action='store_true')
 args = parser.parse_args()
 #Print chosen arguments
@@ -101,6 +100,8 @@ if args.json_file != None:
     with open(args.json_file, "r") as params_file:
         params = json.load(params_file)
 
+
+# Define the ResNet model with a custom trunk
 class ResNetTrunk(ResNet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -118,6 +119,7 @@ class ResNetTrunk(ResNet):
         x = self.layer4(x)
         return x
 
+# Define the URL for downloading the pretrained weights from lunit
 def get_pretrained_url(key):
     URL_PREFIX = "https://github.com/lunit-io/benchmark-ssl-pathology/releases/download/pretrained-weights"
     model_zoo_registry = {
@@ -128,6 +130,7 @@ def get_pretrained_url(key):
     pretrained_url = f"{URL_PREFIX}/{model_zoo_registry.get(key)}"
     return pretrained_url
 
+# Download the pretrained weights from lunit
 def download_pretrained_weights(key, destination):
     pretrained_url = get_pretrained_url(key)
     if not os.path.exists(destination):
@@ -138,7 +141,19 @@ def download_pretrained_weights(key, destination):
     else:
         print(f"Pretrained weights for {key} already exist, skipping download.")
 
+
 def resnet50(pretrained, progress, key, **kwargs):
+    """
+    Arguments:
+        pretrained: bool
+        progress: bool
+        key: str
+
+    This function loads the ResNet50 model with the pretrained weights from lunit.
+
+    Returns:
+        model: ResNetTrunk
+    """
     model = ResNetTrunk(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
         weights_path = f"pretrained_weights/{key}.torch"
@@ -147,6 +162,7 @@ def resnet50(pretrained, progress, key, **kwargs):
         model.load_state_dict(torch.load(weights_path))
     return model
 
+# Define the feature extractor for Barlow Twins
 @register_torch
 class barlow_twins_feature_extractor(TorchFeatureExtractor):
 
@@ -177,6 +193,7 @@ class barlow_twins_feature_extractor(TorchFeatureExtractor):
         }
 
 
+# Define the feature extractor for MoCoV2
 @register_torch
 class mocov2_feature_extractor(TorchFeatureExtractor):
 
@@ -207,6 +224,7 @@ class mocov2_feature_extractor(TorchFeatureExtractor):
         }
 
 
+# Define the feature extractor for SwAV
 @register_torch
 class swav_feature_extractor(TorchFeatureExtractor):
     tag = 'swav_feature_extractor'
@@ -234,26 +252,18 @@ class swav_feature_extractor(TorchFeatureExtractor):
             'class': 'swav_feature_extractor',
             'kwargs': {}
         }
-class FocalLoss(torch.nn.Module):
-    def __init__(self, alpha=1, gamma=2, reduction='mean'):
-        super(FocalLoss, self).__init__()
-        self.alpha = alpha
-        self.gamma = gamma
-        self.reduction = reduction
-
-    def forward(self, inputs, targets):
-        ce_loss = F.cross_entropy(inputs, targets, reduction=self.reduction)
-        pt = torch.exp(-ce_loss)
-        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
-        if self.reduction == 'mean':
-            return torch.mean(focal_loss)
-        elif self.reduction == 'sum':
-            return torch.sum(focal_loss)
-        else:
-            return focal_loss
 
 
 def process_annotation_file(original_path):
+    """
+    Arguments:
+        original_path: str
+
+    This function processes the annotation file by removing duplicate rows and saving the processed file as a new CSV file.
+
+    Returns:
+        None
+    """
     df = pd.read_csv(original_path, header=0, sep=";")
     df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide'}, inplace=True)
     # Finding duplicate rows based on 'slide' column
@@ -270,6 +280,15 @@ def process_annotation_file(original_path):
     df.to_csv(f"{os.path.basename(original_path).strip('.csv')}_slideflow.csv", index=False,sep=",")
 
 def get_highest_numbered_filename(directory_path):
+    """
+    Arguments:
+        directory_path: str
+
+    This function returns the highest numbered filename in the specified directory.
+
+    Returns:
+        highest_number_part: str
+    """
     # List all files in the directory
     files = os.listdir(directory_path)
 
@@ -297,12 +316,32 @@ def get_highest_numbered_filename(directory_path):
 
 # Calculate the misclassification weights
 def calculate_weights(df):
+    """
+    Arguments:
+        df: pd.DataFrame
+
+    This function calculates weights based on the occurence of each class in the dataset.
+
+    Returns:
+        weights: dict
+    """
     counts = df['category'].value_counts()
     weight_bids = 1 / counts.get('BID', 1)
     weight_mfs = 2 / counts.get('MF', 1)  # 2x the weight for MFs
     return {'BID': weight_bids, 'MF': weight_mfs}
 
 def split_dataset_by_patient(dataset, test_fraction=0.2):
+    """
+    Arguments:
+        dataset: sf.Dataset
+        test_fraction: float
+
+    This function splits the dataset into training and validation sets based on the patient ID.
+
+    Returns:
+        train: sf.Dataset
+        test: sf.Dataset
+    """
     df = pd.read_csv(args.annotation_file)
     df = df[df['dataset'] == 'train']
 
@@ -340,86 +379,19 @@ def split_dataset_by_patient(dataset, test_fraction=0.2):
     )
 
     print(train, test)
-    """
-    weights = calculate_weights(train_slides)
-
-    print(weights)
-
-    # Generate TFRecord paths for each slide
-    tfrecord_dir = f"{args.project_directory}/tfrecords/256px_40px"
-    tfrecord_paths = [os.path.join(tfrecord_dir, slide + '.tfrecords') for slide in train_slides['slide']]
-
-    # Map TFRecord paths to weights
-    tfrecord_weights = {tfrecord_path: weights[train_slides.loc[train_slides['slide'] == slide, 'category'].iloc[0]] for tfrecord_path, slide in zip(tfrecord_paths, train_slides['slide'])}
-
-    print(tfrecord_weights)
-
-    # Normalize weights so that they sum up to one
-    total_weight = sum(tfrecord_weights.values())
-    tfrecord_weights_normalized = {tfrecord_path: weight / total_weight for tfrecord_path, weight in tfrecord_weights.items()}
-
-    print(tfrecord_weights_normalized)
-`   """
     train = train.balance(headers='category', strategy=args.training_balance)
-    #test = test.balance(headers='category', strategy=args.training_balance)
-    #train.prob_weights = tfrecord_weights_normalized
-
-
     return train, test
 
-
-def extract_features(extractor, normalizer, dataset, project):
-    feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
-    print(normalizer, args.stain_norm_preset, args.augmentation)
-    bag_directory = project.generate_feature_bags(feature_extractor,
-                                                  dataset,
-                                                  outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}",
-                                                  normalizer=normalizer,
-                                                  normalizer_source=args.stain_norm_preset,
-                                                  augment=args.augmentation)
-
-def read_easy_set():
-    easy_df = pd.read_csv("../../train_list_easy_only.csv")
-    easy_df.replace(';;', '', inplace=True)
-    easy_df.rename(columns={'case_id' : 'patient', 'slide_id' : 'slide', 'label;;' : 'label'}, inplace=True)
-    easy_df['label'] = easy_df['label'].str.replace(';;', '')
-    easy_slides = easy_df['slide'].tolist()
-    print("Processed easy annotation file: ", easy_df)
-    easy_df.to_csv("train_list_easy_only_slideflow.csv")
-
-    easy_set = sf.Dataset(
-    slides = '../../MF_AI_dataset_cropped',
-    annotations="train_list_easy_only_slideflow.csv",
-    tiles=f"{args.project_directory}/tiles/easy_set",
-    tfrecords=f"{args.project_directory}/tfrecords/easy_set",
-    tile_px = args.tile_size,
-    tile_um = args.magnification
-    )
-
-    test_df = pd.read_csv("train_list_definitive_slideflow.csv")
-    #Only retain the slides not in the easy set
-    test_df = test_df[~test_df['slide'].isin(easy_slides)]
-
-    test_df.to_csv("test_list_easy_only_slideflow.csv")
-
-    test_set = sf.Dataset(
-    slides = '../../MF_AI_dataset_cropped',
-    annotations="test_list_easy_only_slideflow.csv",
-    tiles=f"{args.project_directory}/tiles/easy_test",
-    tfrecords=f"{args.project_directory}/tfrecords/easy_test",
-    tile_px = args.tile_size,
-    tile_um = args.magnification
-    )
-
-    easy_set = tile_wsis(easy_set)
-
-    test_set = tile_wsis(test_set)
-
-
-
-    return easy_set, test_set
-
 def read_validation_set(project):
+    """
+    Arguments:
+        project: sf.Project
+
+    This function reads the external validation set and adds it to the project.
+
+    Returns:
+        project: sf.Project
+    """
     #process_annotation_file("../../Thom_Doeleman/annotations.csv")
 
     project.add_source(
@@ -450,7 +422,22 @@ def read_validation_set(project):
 
 
 def train_mil_model(train, val, test, model, extractor, normalizer, project, config):
+    """
+    Arguments:
+        train: sf.Dataset
+        val: sf.Dataset
+        test: sf.Dataset
+        model: str
+        extractor: str
+        normalizer: str
+        project: sf.Project
+        config: dict
 
+    This function trains a MIL model using the specified configuration.
+
+    Returns:
+        result_frame: pd.DataFrame
+    """
 
     config = mil_config(model = model.lower(),
     aggregation_level = args.aggregation_level,
@@ -527,8 +514,21 @@ def train_mil_model(train, val, test, model, extractor, normalizer, project, con
 
 
 def visualize_results(result_frame, model, extractor, normalizer, ext_set=False):
+    """
+    Arguments:
+        result_frame: pd.DataFrame
+        model: str
+        extractor: str
+        normalizer: str
+        ext_set: bool
 
+    This function visualizes the results of the MIL model.
 
+    Returns:
+        result_frame: pd.DataFrame
+        balanced_accuracy: float
+        auroc: float
+    """
     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
     y_pred_cols = [c for c in result_frame.columns if c.startswith('y_pred')]
     for idx in range(len(y_pred_cols)):
@@ -576,7 +576,7 @@ def visualize_results(result_frame, model, extractor, normalizer, ext_set=False)
 
     return result_frame, balanced_accuracy, auroc
 
-def main(easy=False, validation=False):
+def main(validation=False):
 
     #Create project directory
     if not os.path.exists(args.project_directory):
@@ -590,7 +590,7 @@ def main(easy=False, validation=False):
         project = sf.load_project(args.project_directory, use_neptune=True)
         print("Neptune:", project.neptune_api, project.neptune_workspace )
 
-
+    #Process annotation file
     if args.json_file != None:
         normalizers = params['normalization']
         extractors = params['feature_extractor']
@@ -601,8 +601,8 @@ def main(easy=False, validation=False):
         extractors = [args.feature_extractor]
         models = [args.model]
 
-
     print(args.tile_size, args.magnification)
+    #Create dataset
     dataset = project.dataset(tile_px=args.tile_size, tile_um=args.magnification, filters={'dataset' : 'train'})
     print(dataset)
 
@@ -613,31 +613,26 @@ def main(easy=False, validation=False):
         img_format='png',
         enable_downsample=False
         )
-
+    # Balance the dataset based on the outcome label, to ensure equal representation of each class
     dataset.balance(headers='category', strategy=args.training_balance)
     print("Splitting...")
-    train, test = split_dataset_by_patient(dataset, test_fraction=args.test_fraction)
+
+    #Split the dataset into training and testing sets
     train, test = dataset.split(labels='category',  val_fraction=args.test_fraction)
 
-    if easy:
-        train, test = read_easy_set()
-        print("Easy training set: ", train)
-        print("Test set: ", test)
-        train.balance(headers='category', strategy=args.training_balance)
-
-    #overwrite test with external validation set
+    # Read external test set
     if validation:
         project, ext_test = read_validation_set(project)
-
-    if args.multi_magnification:
-        args.model = "mm_attention_mil"
 
     results = {}
 
     columns = ['normalization', 'feature_extractor', 'mil_model', 'split', 'balanced_accuracy', 'auc']
     df = pd.DataFrame(columns=columns)
+    #Train models based on the specified parameters
     if validation:
         ext_df = pd.DataFrame(columns=columns)
+    
+    # Loop over all combinations of feature extractors, normalizers, and MIL models
     for extractor in extractors:
         for normalizer in normalizers:
             if normalizer.lower() == 'none':
@@ -662,48 +657,12 @@ def main(easy=False, validation=False):
                 split_index = 0
                 best_roc_auc = 0
                 for train, val in splits:
-                    if easy:
-                        feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
-                        bag_directory = project.generate_feature_bags(feature_extractor,
-                                                                      train,
-                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_easy",
-                                                                      normalizer=normalizer,
-                                                                      normalizer_source=args.stain_norm_preset,
-                                                                      augment=args.augmentation)
-
-                        bag_directory = project.generate_feature_bags(feature_extractor,
-                                                                      test,
-                                                                      outdir=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_easy",
-                                                                      normalizer=normalizer,
-                                                                      normalizer_source=args.stain_norm_preset,
-                                                                      augment=args.augmentation)
-
-
+                    #Train model
                     result_frame = train_mil_model(train, val, test, model, extractor, normalizer, project, config)
 
                     result_frame, balanced_accuracy, roc_auc  = visualize_results(result_frame, model, extractor, normalizer)
                     current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
-                    """
-                    labels, unique_labels = dataset.labels('category', format="name")
-                    #Visualize features
-                    features = sf.DatasetFeatures(
-                    model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-                    dataset=dataset,
-                    labels=labels,
-                    normalizer=normalizer,
-                    normalizer_source=args.stain_norm_preset)
 
-                    slide_map = features.map_activations(
-                    n_neighbors=10,
-                    min_dist=0.2
-                    )
-
-                    slide_map.label_per_slide(labels)
-                    slide_map.plot()
-                    plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_int_set", dpi=300)
-                    plt.close()
-                    """
-                    #print(extractor, normalizer, model, result_frame)
                     results["_".join([extractor, normalizer, model, str(split_index)])] = balanced_accuracy
                     print("Balanced Accuracy: ", balanced_accuracy)
                     data = {
@@ -717,6 +676,8 @@ def main(easy=False, validation=False):
                     df = df.append(data, ignore_index=True)
                     print(df)
                     print("Validating...")
+
+                    # Validate model on external set
                     if validation:
                         feature_extractor = sf.model.build_feature_extractor(extractor.lower(), tile_px=args.tile_size)
                         bag_directory = project.generate_feature_bags(feature_extractor,
@@ -725,28 +686,6 @@ def main(easy=False, validation=False):
                                                                       normalizer=normalizer,
                                                                       normalizer_source=args.stain_norm_preset)
 
-                        """
-                        labels, unique_labels = ext_set.labels('category', format="name")
-
-                        #Visualize features
-                        features = sf.DatasetFeatures(
-                        model=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
-                        dataset=ext_set,
-                        labels=labels,
-                        normalizer=normalizer,
-                        normalizer_source=args.stain_norm_preset)
-
-                        slide_map = features.map_activations(
-                        n_neighbors=10,
-                        min_dist=0.2
-                        )
-
-                        labels, unique_labels = ext_set.labels('category', format="name")
-                        slide_map.label_per_slide(labels)
-                        slide_map.plot()
-                        plt.savefig(f"{args.project_directory}/activations_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set", dpi=300)
-                        plt.close()
-                        """
 
                         if args.slide_evaluation:
                             config =  mil_config(args.model.lower(),
@@ -755,32 +694,16 @@ def main(easy=False, validation=False):
 
                         current_highest_exp_number = get_highest_numbered_filename(f"{args.project_directory}/mil/")
 
-                        if args.multi_magnification == True:
-                            bags10x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_10x_{args.tile_size}_ext_set"
-                            bags20x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_20x_{args.tile_size}_ext_set"
-                            bags40x = f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_40x_{args.tile_size}_ext_set"
-
-                            result_frame = mil.eval_mil(
-                            weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-                            outcomes="category",
-                            dataset=ext_test,
-                            bags=bags40x,
-                            config=config,
-                            outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
-                            #attention_heatmaps=True,
-                            #cmap="coolwarm"
-                            )
-                        else:
-                            result_frame = mil.eval_mil(
-                            weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
-                            outcomes="category",
-                            dataset=ext_test,
-                            bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}_ext_set",
-                            config=config,
-                            outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
-                            #attention_heatmaps=True,
-                            #cmap="coolwarm"
-                            )
+                        result_frame = mil.eval_mil(
+                        weights=f"{args.project_directory}/mil/{current_highest_exp_number}-{model.lower()}_{extractor.lower()}_{normalizer.lower()}",
+                        outcomes="category",
+                        dataset=ext_test,
+                        bags=f"{args.project_directory}/bags/{extractor.lower()}_{normalizer.lower()}_{args.magnification}_{args.tile_size}_ext_set",
+                        config=config,
+                        outdir=f"{args.project_directory}/mil_eval/{current_highest_exp_number}_{model.lower()}_{extractor.lower()}_{normalizer.lower()}_ext_set",
+                        #attention_heatmaps=True,
+                        #cmap="coolwarm"
+                        )
 
                         result_frame, balanced_accuracy, roc_auc = visualize_results(result_frame, model, extractor, normalizer, ext_set=True)
                         data = {
@@ -824,6 +747,7 @@ def main(easy=False, validation=False):
 
     date = datetime.now().strftime("%d_%m_%Y_%H:%M:%S")
 
+    # Save results to CSV files
     df.to_csv(f"{args.project_directory}/results_{date}_full.csv", index=False)
     result_df.to_csv(f"{args.project_directory}/results_{date}.csv", index=False)
 
@@ -841,4 +765,4 @@ if __name__ == "__main__":
     annotations = "../../Thom_Doeleman/annotations.csv"
     if not os.path.exists(f"{os.path.basename(annotations).strip('.csv')}_slideflow.csv"):
         process_annotation_file(annotations)
-    main(easy=False, validation=True)
+    main(validation=True)
